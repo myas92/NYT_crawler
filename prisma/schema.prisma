@@ -18,3 +18,12 @@ model nyt {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @default(now())
 }
+model answers_error {
+  id                Int      @id @default(autoincrement())
+  date              String?  
+  url               String? 
+  error             String?
+  is_deleted        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+}
