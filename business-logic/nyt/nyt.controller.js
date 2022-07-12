@@ -24,7 +24,7 @@ const crawlQuestionsAnswers = async (req, res, next) => {
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
-            `something went warong, plase try again later}`,
+            `something went warong, plase try again later`,
             500
         );
         return next(errors);
@@ -46,7 +46,7 @@ const getQuestionsAnswer = async (req, res, next) => {
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
-            `something went warong, plase try again later}`,
+            `something went warong, plase try again later`,
             500
         );
         return next(errors);
