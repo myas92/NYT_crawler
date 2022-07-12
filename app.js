@@ -9,7 +9,7 @@ const router = express.Router();
 
 const nytRouters = require("./business-logic/nyt/nyt.routes");
 const HttpError = require('./utils/http-error');
-
+const nytController = require("./business-logic/nyt/nyt.controller");
 app.use("/nyt", nytRouters);
 
 
@@ -36,9 +36,10 @@ app.use((error, req, res, next) => {
 // 	'Asia/Tehran'
 // );
 let secondJob = new CronJob(
-    '* * * * * sun,mon',
-    function () {
-        console.log('You will see this message every sun,mon ');
+    '*/5 30-31 6 * * sun,mon',
+    async function () {
+        console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
+        await nytController.crawlQuestionsAnswers()
     },
     null,
     true,
@@ -46,9 +47,11 @@ let secondJob = new CronJob(
 );
 //  روزهای شنبه جمعه پینجشنبه چهارشنبه سه شنبه از ساعت ۶ و ۳۰ دقیقه هر ۵ ثانیه اجرا می شود
 let ThirdJob = new CronJob(
-    '*/5 12 16 * * sat,tue,wed,thu,fri',
+    // '*/5 12-13 18 * * sat,tue,wed,thu,fri',
+    '*/5 30-35 6 * * sat,tue,wed,thu,fri',
     async function () {
-        console.log('You will see this message every sat,tue,wed,thu,fri');
+        console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
+        await nytController.crawlQuestionsAnswers()
     },
     null,
     true,

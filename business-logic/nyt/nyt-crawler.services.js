@@ -19,10 +19,9 @@ class NytCrwalerService {
      */
     async getAllQuestionLinksFromHomePage() {
         try {
-            console.log('------------------')
             console.log(this.date)
             console.log(`https://nytminicrossword.com/nyt-mini-crossword/${this.date}`)
-            console.log('------------------');
+
             const url = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
             // درج اطلاعات اولیه درخواست 
             let requestInfo = await prisma.nyt.upsert({
@@ -47,7 +46,7 @@ class NytCrwalerService {
                         questions: questions
                     },
                 });
-                return { id: requestInfo.id, date: this.date, questions, questions_answers: [] }
+                return { id: requestInfo.id, date: this.date, questions, questions_answers: null }
             }
             else {
                 return { id: requestInfo.id, date: this.date, questions: requestInfo.questions, questions_answers: requestInfo.questions_answers }
@@ -92,9 +91,16 @@ class NytCrwalerService {
     async getAllAnswersFromQuestionLinks(id, date, questions) {
         const defer = q.defer();
         let answers = [];
-        async.each(questions, async (question) => {
+        await prisma.nyt.update({
+            where: { id: id },
+            data:{
+                status: statusService.RUNNING
+            }
+        })
+        async.eachSeries(questions, async (question) => {
             try {
                 let answer = await this.getAnswerByUrl(question.link);
+                console.log(answer)
                 if (answer) {
                     question["answer"] = answer;
                     answers.push(question)
@@ -132,7 +138,8 @@ class NytCrwalerService {
         const config = {
             method: 'get',
             url: url,
-            headers: {}
+            headers: {},
+            timeout: 4000
         };
         const response = await axios(config)
         const $ = cheerio.load(response.data);
