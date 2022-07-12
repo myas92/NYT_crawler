@@ -1,6 +1,6 @@
 const HttpError = require("../../utils/http-error");
 const moment = require('moment-jalaali');
-const NytCrwaler = require('./nytCrawler.services');
+const NytCrwaler = require('./nyt-crawler.services');
 const prisma = require('../../prisma/prisma-client');
 const crawlQuestionsAnswers = async (req, res, next) => {
     try {

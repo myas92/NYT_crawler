@@ -4,10 +4,10 @@ const prisma = require('./prisma/prisma-client');
 const express = require('express');
 const app = express();
 const moment = require('moment-jalaali');
-const NytCrwaler = require('./bussiness-logic/nyt/nytCrawler.services');
+const NytCrwaler = require('./business-logic/nyt/nyt-crawler.services');
 const router = express.Router();
 
-const nytRouters = require("./bussiness-logic/nyt/nyt.routes");
+const nytRouters = require("./business-logic/nyt/nyt.routes");
 const HttpError = require('./utils/http-error');
 
 app.use("/nyt", nytRouters);
