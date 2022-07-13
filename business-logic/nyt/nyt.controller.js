@@ -12,24 +12,20 @@ const crawlQuestionsAnswersAPI = async (req, res, next) => {
         let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePage()
         if (questionlinksInfo) {
             let { id, date, questions, questions_answers } = questionlinksInfo;
-            if (!questions_answers){
+            if (!questions_answers) {
                 let requestInfo = await prisma.nyt.findFirst({
                     where: { id: id },
                 })
+
                 if (requestInfo.status != statusService.RUNNING)
                     answers = await nyt.getAllAnswersFromQuestionLinks(id, date, questions)
-                // else{
-                //     console.log("getAllAnswersFromQuestionLinks is Running")
-                // }
-                answers = await nyt.getAllAnswersFromQuestionLinks(id, date, questions)
-
             }
             else {
                 answers = questions_answers
             }
         }
         if (!answers) {
-            return res.status(201).json({ message: "Date is invalid", result: [] })
+            return res.status(201).json({ message: "Try again later", result: [] })
         }
         return res.status(200).json({ message: "Request done successfully", result: answers })
     } catch (error) {
@@ -65,11 +61,11 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
 };
 
 
-const crawlQuestionsAnswers = async () => {
+const crawlQuestionsAnswers = async (inputDate = moment().format('M-D-YY')) => {
     try {
         let answers;
         console.log('---------------------- Crawler started for NYT --------------------')
-        date = moment().format('M-D-YY');
+        date = inputDate;
         let nyt = new NytCrwaler(date);
         let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePage()
         if (questionlinksInfo) {
@@ -78,15 +74,12 @@ const crawlQuestionsAnswers = async () => {
                 let requestInfo = await prisma.nyt.findFirst({
                     where: { id: id },
                 })
-                if (requestInfo.status != statusService.RUNNING)
+                if (requestInfo.status != statusService.RUNNING) {
                     answers = await nyt.getAllAnswersFromQuestionLinks(id, date, questions)
-                // else{
-                //     console.log("getAllAnswersFromQuestionLinks is Running")
-                // }
+                }
             }
             else {
                 console.log('*************DATA GETED COMPLETELY****************************')
-                // answers = questions_answers
             }
         }
 

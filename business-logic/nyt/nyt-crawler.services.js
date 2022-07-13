@@ -22,23 +22,39 @@ class NytCrwalerService {
             console.log(this.date)
             console.log(`https://nytminicrossword.com/nyt-mini-crossword/${this.date}`)
 
-            const url = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
+            const urlMiniCross = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
+            const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
             // درج اطلاعات اولیه درخواست 
             let requestInfo = await prisma.nyt.upsert({
                 where: { date: this.date },
                 update: {},
                 create: {
                     date: this.date,
-                    url: url,
+                    url_mini_cross: urlMiniCross,
+                    url_maxi_cross: urlMaxiCross,
                     status: statusService.START
                 }
             });
+            let updateDate = moment(requestInfo.updatedAt).add(5, 'm').format('YYYY-MM-DD HH:mm:ss');
+            let currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
+            if (updateDate < currentDate) {
+                await prisma.nyt.update({
+                    where: { id: requestInfo.id },
+                    data: {
+                        status: statusService.START,
+                        updatedAt: new Date()
+                    }
+                });
+            }
             // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
-            if (!requestInfo.questions) {
+            if (requestInfo.questions == null || requestInfo.questions?.length == 0) {
                 // ارسال درخواست به سایت
-                const response = await axios({ method: 'get', url: url, headers: {} });
+                const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
+                const responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
                 // استخراج لینک و عنوان و نوع سوال
-                const questions = this.extractQuestionLinks(response.data)
+                const questionsMiniCross = this.extractQuestionLinks(responseMiniCross.data, "mini-cross");
+                const questionsMaxiCross = this.extractQuestionLinks(responseMaxiCross.data, "maxi-cross");
+                let questions = [...questionsMiniCross, ...questionsMaxiCross]
                 // درج اطلاعات در دیتابیس که شامل سوالات هست
                 await prisma.nyt.update({
                     where: { id: requestInfo.id },
@@ -48,9 +64,8 @@ class NytCrwalerService {
                 });
                 return { id: requestInfo.id, date: this.date, questions, questions_answers: null }
             }
-            else {
-                return { id: requestInfo.id, date: this.date, questions: requestInfo.questions, questions_answers: requestInfo.questions_answers }
-            }
+            return { id: requestInfo.id, date: this.date, questions: requestInfo.questions, questions_answers: requestInfo.questions_answers }
+
         } catch (error) {
             console.log(error)
         }
@@ -60,7 +75,7 @@ class NytCrwalerService {
      * @param {*} html 
      * @returns 
      */
-    extractQuestionLinks(html) {
+    extractQuestionLinks(html, category) {
         let questions = [];
         let isDown = false;
         let $ = cheerio.load(html);
@@ -74,7 +89,8 @@ class NytCrwalerService {
                 let obj = {
                     link: link,
                     text: text,
-                    type: isDown ? 'down' : 'across'
+                    type: isDown ? 'down' : 'across',
+                    category
                 }
                 questions.push(obj)
             }
@@ -93,7 +109,7 @@ class NytCrwalerService {
         let answers = [];
         await prisma.nyt.update({
             where: { id: id },
-            data:{
+            data: {
                 status: statusService.RUNNING
             }
         })
@@ -106,6 +122,8 @@ class NytCrwalerService {
                     answers.push(question)
                 }
             } catch (error) {
+                question["answer"] = '';
+                answers.push(question)
                 await prisma.answers_error.create({
                     data: {
                         date: date,

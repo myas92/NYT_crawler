@@ -36,7 +36,7 @@ app.use((error, req, res, next) => {
 // 	'Asia/Tehran'
 // );
 let secondJob = new CronJob(
-    '*/5 30-31 6 * * sun,mon',
+    '*/5 30-32 6 * * sun,mon',
     async function () {
         console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
         await nytController.crawlQuestionsAnswers()
@@ -47,7 +47,7 @@ let secondJob = new CronJob(
 );
 //  روزهای شنبه جمعه پینجشنبه چهارشنبه سه شنبه از ساعت ۶ و ۳۰ دقیقه هر ۵ ثانیه اجرا می شود
 let ThirdJob = new CronJob(
-    // '*/5 12-13 18 * * sat,tue,wed,thu,fri',
+    // '*/5 39-40 9 * * sat,tue,wed,thu,fri',
     '*/5 30-35 6 * * sat,tue,wed,thu,fri',
     async function () {
         console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
