@@ -19,6 +19,17 @@ model nyt {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @default(now())
 }
+model main_nyt {
+  id                Int      @id @default(autoincrement())
+  date              String?  @unique
+  url_mini_cross    String?  @unique
+  url_maxi_cross    String?  @unique
+  questions_answers Json?
+  status            String?
+  is_deleted        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+}
 
 model answers_error {
   id         Int      @id @default(autoincrement())

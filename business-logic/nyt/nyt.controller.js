@@ -3,9 +3,37 @@ const moment = require('moment-jalaali');
 const NytCrwaler = require('./nyt-crawler.services');
 const prisma = require('../../prisma/prisma-client');
 const statusService = require('../../config/constance/status');
-const crawlQuestionsAnswersAPI = async (req, res, next) => {
+
+const crawlMainQuestionAnswersAPI = async (req, res, next) => {
     try {
-        let { date } = req.params;
+        console.log('---------------------- Crawler started for NYT API --------------------')
+        date = moment().format('M-D-YY');
+        let nyt = new NytCrwaler(date);
+        let questionsAnswers = await nyt.getAllQuestionAnswers()
+        console.log('---------------------- Crawler ended for NYT  API--------------------')
+        return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
+    } catch (error) {
+        console.log(error)
+    }
+}
+const crawlMainQuestionAnswers = async () => {
+    try {
+        console.log('---------------------- Crawler started for NYT --------------------')
+        date = moment().format('M-D-YY');
+        let nyt = new NytCrwaler(date);
+        let questionsAnswers = await nyt.getAllQuestionAnswers()
+        console.log('---------------------- Crawler ended for NYT --------------------')
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+// --------------------------------------------------------------------------------
+// Extract Question and answers based on links
+
+const crawlQuestionsAnswersBasedLinksAPI = async (req, res, next) => {
+    try {
+        let { date } = req.query;
         let answers;
         date = date ? date : moment().format('M-D-YY');
         let nyt = new NytCrwaler(date);
@@ -41,11 +69,18 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
     try {
         let { date } = req.params
         date = date ? date : moment().format('M-D-YY');
-        let result = await prisma.nyt.findFirst({
+        let result = await prisma.main_nyt.findFirst({
             where: {
                 date: date
             }
         })
+        if (!result) {
+            result = await prisma.nyt.findFirst({
+                where: {
+                    date: date
+                }
+            })
+        }
         if (!result) {
             return res.status(200).json({ message: "There is no data for this date", result: [] })
         }
@@ -59,8 +94,6 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         return next(errors);
     }
 };
-
-
 const crawlQuestionsAnswers = async (inputDate = moment().format('M-D-YY')) => {
     try {
         let answers;
@@ -90,6 +123,12 @@ const crawlQuestionsAnswers = async (inputDate = moment().format('M-D-YY')) => {
 };
 
 
-exports.crawlQuestionsAnswersAPI = crawlQuestionsAnswersAPI
-exports.getQuestionsAnswerAPI = getQuestionsAnswerAPI
+
+
+exports.crawlMainQuestionAnswersAPI = crawlMainQuestionAnswersAPI
+exports.crawlMainQuestionAnswers = crawlMainQuestionAnswers
+
+exports.crawlQuestionsAnswersBasedLinksAPI = crawlQuestionsAnswersBasedLinksAPI
 exports.crawlQuestionsAnswers = crawlQuestionsAnswers
+
+exports.getQuestionsAnswerAPI = getQuestionsAnswerAPI
