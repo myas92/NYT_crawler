@@ -40,9 +40,22 @@ class NytCrwalerService {
             // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
             if (requestInfo.questions_answers == null || requestInfo.questions_answers?.length == 0) {
                 // ارسال درخواست به سایت
-                const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                 const responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
+                const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                 // استخراج لینک و عنوان و نوع سوال
+                console.log('---------------------MINI---------------------------------');
+                console.log('---------------------MINI---------------------------------');
+                console.log('---------------------MINI---------------------------------');
+                console.log('---------------------MINI---------------------------------');
+                console.log(responseMiniCross.data)
+                console.log('**********************MINI*************************************');
+                console.log('**********************MINI*************************************');
+                console.log('---------------------MAXI---------------------------------');
+                console.log('---------------------MAXI---------------------------------');
+                console.log('---------------------MAXI---------------------------------');
+                console.log('---------------------MAXI---------------------------------');
+                console.log(responseMaxiCross.data)
+                console.log('***********************************************************');
 
                 const questionsAnswersMiniCross = this.extractQuestionsAnswers(responseMiniCross.data, "mini-cross");
                 const questionsAnswersMaxiCross = this.extractQuestionsAnswers(responseMaxiCross.data, "maxi-cross");
