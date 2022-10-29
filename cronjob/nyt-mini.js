@@ -69,7 +69,7 @@ let firstSendDataToProductionForMini = new CronJob(
 );
 // ارسال داده ها به سمت سرور عملباتی در روزهای کاری
 let secondsendDataToProductionForMini = new CronJob(
-    '0 4 2 * * sat,tue,wed,thu,fri',
+    '30 4 2 * * sat,tue,wed,thu,fri',
     async function () {
         console.log('Send data for game-mini', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
         await nytController.sendDataToProductionForMini()

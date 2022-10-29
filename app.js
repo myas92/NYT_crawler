@@ -27,8 +27,8 @@ app.use((error, req, res, next) => {
     });
 });
 
-const cl = require('./business-logic/nyt/nyt.controller');
+// const cl = require('./business-logic/nyt/nyt.controller');
 
-cl.sendDataToProductionForMini()
+// cl.sendDataToProductionForMini()
 
 module.exports = app;
