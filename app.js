@@ -1,62 +1,34 @@
 require('dotenv').config();
-const CronJob = require('cron').CronJob;
 const prisma = require('./prisma/prisma-client');
 const express = require('express');
 const app = express();
-const moment = require('moment-jalaali');
-const NytCrwaler = require('./business-logic/nyt/nyt-crawler.services');
-const router = express.Router();
 
 const nytRouters = require("./business-logic/nyt/nyt.routes");
 const HttpError = require('./utils/http-error');
-const nytController = require("./business-logic/nyt/nyt.controller");
+const SevenLittleWordsRouter = require("./business-logic/seven-little-words/seven-little-words-crawler.routes");
+require('./cronjob/nyt-mini');
+require('./cronjob/nyt-maxi');
+require('./cronjob/seven-little-words');
+
 app.use("/nyt", nytRouters);
+app.use("/seven-little-words", SevenLittleWordsRouter);
 
 
 app.use((req, res, next) => {
-    const error = new HttpError("could not found this route", 404);
+    const error = new HttpError("Could not found this route", 404);
     throw error;
 })
 
 app.use((error, req, res, next) => {
     res.status(error.statusCode || 500);
     res.json({
-      code: error.code || -1,
-      message: error.message || "an unknown error occurred!",
+        code: error.code || -1,
+        message: error.message || "An unknown error occurred!",
     });
-  });
+});
 
-// let FirstJob = new CronJob(
-// 	'* * * * * sat,sun,mon,tue,wed,thu,fri',
-// 	function() {
-// 		console.log('You will see this message every second');
-// 	},
-// 	null,
-// 	true,
-// 	'Asia/Tehran'
-// );
-let secondJob= new CronJob(
-    '30,45 30-31 2 * * sun,mon',
-    async function () {
-        console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
-        await nytController.crawlMainQuestionAnswers()
-    },
-    null,
-    true,
-    'Asia/Tehran'
-);
-//  روزهای شنبه جمعه پینجشنبه چهارشنبه سه شنبه از ساعت ۶ و ۳۰ دقیقه هر ۵ ثانیه اجرا می شود
-let ThirdJob = new CronJob(
-    // '*/5 22-23 11 * * sat,tue,wed,thu,fri',
-    '30,45 30-31 6 * * sat,tue,wed,thu,fri',
-    async function () {
-        console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
-        await nytController.crawlMainQuestionAnswers()
-    },
-    null,
-    true,
-    'Asia/Tehran'
-);
+const cl = require('./business-logic/nyt/nyt.controller');
 
+cl.sendDataToProductionForMini()
 
 module.exports = app;

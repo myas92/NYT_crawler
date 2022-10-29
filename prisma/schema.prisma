@@ -7,23 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model nyt {
+model nyt_maxi {
   id                Int      @id @default(autoincrement())
+  qa_id              String?
   date              String?  @unique
-  url_mini_cross    String?  @unique
   url_maxi_cross    String?  @unique
   questions_answers Json?
-  questions         Json?
   status            String?
   is_deleted        Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @default(now())
 }
-model main_nyt {
+model nyt_mini {
   id                Int      @id @default(autoincrement())
+  qa_id              String?
   date              String?  @unique
   url_mini_cross    String?  @unique
-  url_maxi_cross    String?  @unique
   questions_answers Json?
   status            String?
   is_deleted        Boolean  @default(false)
@@ -39,4 +38,27 @@ model answers_error {
   is_deleted Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
+}
+
+model seven_little_words {
+  id                Int      @id @default(autoincrement())
+  qa_id              String?
+  date              String?  @unique
+  url    String?  @unique
+  questions_answers Json?
+  status            String?
+  is_deleted        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+}
+
+model response_info {
+  id                Int      @id @default(autoincrement())
+  qa_id             String?
+  date              String?
+  category          String?
+  response          String?
+  is_deleted        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
 }

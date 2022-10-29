@@ -7,6 +7,9 @@ const q = require('q');
 const prisma = require('../../prisma/prisma-client');
 const statusService = require('../../config/constance/status');
 const fs = require('fs');
+const { del } = require('q');
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+const {randomBytes} = require('crypto');
 class NytCrwalerService {
     constructor(inputDate) {
         this.date = inputDate
@@ -17,22 +20,68 @@ class NytCrwalerService {
      * @param {*} this.date 7-11-22
      * @returns 
      */
-    async getAllQuestionAnswers() {
+    async getAllQuestionAnswersForMini() {
         try {
-            let questionsAnswers = []
-            console.log(this.date)
+            console.log("Mini: ", this.date)
             console.log(`https://nytminicrossword.com/nyt-mini-crossword/${this.date}`)
-            console.log(`https://nytminicrossword.com/nyt-crossword/${this.date}`)
 
             const urlMiniCross = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
-            const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
             // درج اطلاعات اولیه درخواست 
-            let requestInfo = await prisma.main_nyt.upsert({
+            let requestInfo = await prisma.nyt_mini.upsert({
                 where: { date: this.date },
                 update: {},
                 create: {
+                    qa_id: randomBytes(5).toString('hex'),
                     date: this.date,
                     url_mini_cross: urlMiniCross,
+                    status: statusService.START
+                }
+            });
+            // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
+            if (requestInfo.questions_answers == null || requestInfo.questions_answers?.length == 0) {
+                // ارسال درخواست به سایت
+                let responseMiniCross;
+                responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
+                // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
+                let isValidMiniContent = this.isValidContent(responseMiniCross.data, 'NYT Mini Crossword Answers');
+                if (!isValidMiniContent) {
+                    throw new Error('Content is not valid')
+                }
+                // fs.writeFileSync(`./body/mini_${this.date}.html`, responseMiniCross.data)
+                // استخراج لینک و عنوان و نوع سوال
+
+                const questionsAnswersMiniCross = this.extractQuestionsAnswers(responseMiniCross.data, "mini-cross");
+                if (questionsAnswersMiniCross) {
+                    // درج اطلاعات در دیتابیس که شامل سوالات هست
+                    await prisma.nyt_mini.update({
+                        where: { id: requestInfo.id },
+                        data: {
+                            questions_answers: questionsAnswersMiniCross,
+                            status: statusService.FINISH
+                        },
+                    });
+
+                }
+                return questionsAnswersMiniCross
+            }
+            return requestInfo.questions_answers
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    async getAllQuestionAnswersForMaxi() {
+        try {
+            console.log("Maxi: ", this.date)
+            console.log(`https://nytminicrossword.com/nyt-crossword/${this.date}`)
+
+            const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
+            // درج اطلاعات اولیه درخواست 
+            let requestInfo = await prisma.nyt_maxi.upsert({
+                where: { date: this.date },
+                update: {},
+                create: {
+                    qa_id: randomBytes(5).toString('hex'),
+                    date: this.date,
                     url_maxi_cross: urlMaxiCross,
                     status: statusService.START
                 }
@@ -40,37 +89,34 @@ class NytCrwalerService {
             // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
             if (requestInfo.questions_answers == null || requestInfo.questions_answers?.length == 0) {
                 // ارسال درخواست به سایت
-                const responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
-                const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
+                let responseMaxiCross;
+                let isValidMaxiContent
+                let requestNumber = new Array(5).fill(0)
+                for (let request of requestNumber) {
+                    responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
+                    isValidMaxiContent = this.isValidContent(responseMaxiCross.data, 'NYT Crossword Answers')
+                    if (isValidMaxiContent)
+                        break;
+                    await delay(5000)
+                }
+                if (!isValidMaxiContent) {
+                    throw new Error('Content is not valid')
+                }
                 // استخراج لینک و عنوان و نوع سوال
-                console.log('---------------------MINI---------------------------------');
-                console.log('---------------------MINI---------------------------------');
-                console.log('---------------------MINI---------------------------------');
-                console.log('---------------------MINI---------------------------------');
-                console.log(responseMiniCross.data)
-                console.log('**********************MINI*************************************');
-                console.log('**********************MINI*************************************');
-                console.log('---------------------MAXI---------------------------------');
-                console.log('---------------------MAXI---------------------------------');
-                console.log('---------------------MAXI---------------------------------');
-                console.log('---------------------MAXI---------------------------------');
-                console.log(responseMaxiCross.data)
-                console.log('***********************************************************');
 
-                const questionsAnswersMiniCross = this.extractQuestionsAnswers(responseMiniCross.data, "mini-cross");
                 const questionsAnswersMaxiCross = this.extractQuestionsAnswers(responseMaxiCross.data, "maxi-cross");
-                if (questionsAnswersMiniCross && questionsAnswersMaxiCross) {
-                    let questionsAnswers = [...questionsAnswersMiniCross, ...questionsAnswersMaxiCross]
+                if (questionsAnswersMaxiCross) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
-                    await prisma.main_nyt.update({
+                    await prisma.nyt_maxi.update({
                         where: { id: requestInfo.id },
                         data: {
-                            questions_answers: questionsAnswers
+                            questions_answers: questionsAnswersMaxiCross,
+                            status: statusService.FINISH
                         },
                     });
 
                 }
-                return questionsAnswers
+                return questionsAnswersMaxiCross
             }
             return requestInfo.questions_answers
         } catch (error) {
@@ -114,6 +160,16 @@ class NytCrwalerService {
         return isAnswer ? result : null;
     }
 
+    isValidContent(html, title) {
+        let isValid = false;
+        let $ = cheerio.load(html);
+        let content = $('.entry-content > .parent').text()
+        if (title == content) {
+            isValid = true
+        }
+        return isValid
+    }
+
     // ---------------------------------------------------------------------------------------------------------
     // Extract based on links
 
@@ -123,7 +179,7 @@ class NytCrwalerService {
             console.log(`https://nytminicrossword.com/nyt-mini-crossword/${this.date}`)
 
             const urlMiniCross = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
-            const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
+            // const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
             // درج اطلاعات اولیه درخواست 
             let requestInfo = await prisma.nyt.upsert({
                 where: { date: this.date },
@@ -131,7 +187,7 @@ class NytCrwalerService {
                 create: {
                     date: this.date,
                     url_mini_cross: urlMiniCross,
-                    url_maxi_cross: urlMaxiCross,
+                    // url_maxi_cross: urlMaxiCross,
                     status: statusService.START
                 }
             });
@@ -147,24 +203,23 @@ class NytCrwalerService {
                 });
             }
             // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
-            if (requestInfo.questions == null || requestInfo.questions?.length == 0) {
-                // ارسال درخواست به سایت
-                const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
-                const responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
-                // استخراج لینک و عنوان و نوع سوال
-                const questionsMiniCross = this.extractQuestionLinks(responseMiniCross.data, "mini-cross");
-                const questionsMaxiCross = this.extractQuestionLinks(responseMaxiCross.data, "maxi-cross");
-                let questions = [...questionsMiniCross, ...questionsMaxiCross]
-                // درج اطلاعات در دیتابیس که شامل سوالات هست
-                await prisma.nyt.update({
-                    where: { id: requestInfo.id },
-                    data: {
-                        questions: questions
-                    },
-                });
-                return { id: requestInfo.id, date: this.date, questions, questions_answers: null }
-            }
-            return { id: requestInfo.id, date: this.date, questions: requestInfo.questions, questions_answers: requestInfo.questions_answers }
+            // if (requestInfo.questions == null || requestInfo.questions?.length == 0) {
+            // ارسال درخواست به سایت
+            const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
+            // const responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
+            // استخراج لینک و عنوان و نوع سوال
+            const questionsMiniCross = this.extractQuestionLinks(responseMiniCross.data, "mini-cross");
+            // const questionsMaxiCross = this.extractQuestionLinks(responseMaxiCross.data, "maxi-cross");
+            // let questions = [...questionsMiniCross, ...questionsMaxiCross]
+            // درج اطلاعات در دیتابیس که شامل سوالات هست
+            await prisma.nyt.update({
+                where: { id: requestInfo.id },
+                data: {
+                    questions: questionsMiniCross
+                },
+            });
+            return { id: requestInfo.id, date: this.date, questions: questionsMiniCross, url: urlMiniCross }
+            // }
 
         } catch (error) {
             console.log(error)
@@ -205,7 +260,7 @@ class NytCrwalerService {
      * @param {*} questions 
      * @returns 
      */
-    async getAllAnswersFromQuestionLinks(id, date, questions) {
+    async getAllAnswersFromQuestionLinks(id, date, questions, url) {
         const defer = q.defer();
         let answers = [];
         await prisma.nyt.update({
@@ -214,14 +269,19 @@ class NytCrwalerService {
                 status: statusService.RUNNING
             }
         })
+        let result = [];
         async.eachSeries(questions, async (question) => {
             try {
                 let answer = await this.getAnswerByUrl(question.link);
-                console.log(answer)
                 if (answer) {
-                    question["answer"] = answer;
-                    delete question.link
-                    answers.push(question)
+                    let obj = {
+                        type: question.type,
+                        answer: answer,
+                        category: question.category,
+                        question: question.question
+                    }
+                    result.push(obj)
+
                 }
             } catch (error) {
                 question["answer"] = '';
@@ -240,16 +300,55 @@ class NytCrwalerService {
                 console.log("----------------------------------Error End-------------------------------------")
             }
         }, async () => {
-            await prisma.nyt.update({
+            await prisma.nyt_mini.upsert({
                 where: {
-                    id: id
+                    date: date
                 },
-                data: {
-                    questions_answers: answers,
+                update: {
+                    questions_answers: result,
+                },
+                create: {
+                    date: date,
+                    url_mini_cross: url,
+                    questions_answers: result,
                     status: statusService.FINISH
                 },
             });
-            defer.resolve(answers)
+            defer.resolve(result)
+        })
+        return defer.promise;
+    }
+    /**
+     * دریافت جواب ها از همه لینک های سوال
+     * @param {*} id 
+     * @param {*} questions 
+     * @returns 
+     */
+    async getAllAnswersFromQuestionLinksForCheck(id, date, questions, url) {
+        const defer = q.defer();
+
+        let result = [];
+        async.eachSeries(questions, async (question) => {
+            try {
+                let answer = await this.getAnswerByUrl(question.link);
+                if (answer) {
+                    let obj = {
+                        type: question.type,
+                        answer: answer,
+                        category: question.category,
+                        question: question.question
+                    }
+                    result.push(obj)
+
+                }
+            } catch (error) {
+                console.log("--------------- ERROR in getAllAnswersFromQuestionLinks Start-------------------")
+                console.log("getAllContentLink----> ", error)
+                console.log("item", question)
+                console.log("----------------------------------Error End-------------------------------------")
+            }
+        }, async () => {
+            defer.resolve(result)
         })
         return defer.promise;
     }
@@ -259,7 +358,7 @@ class NytCrwalerService {
             method: 'get',
             url: url,
             headers: {},
-            timeout: 4000
+            timeout: 10000
         };
         const response = await axios(config)
         const $ = cheerio.load(response.data);
