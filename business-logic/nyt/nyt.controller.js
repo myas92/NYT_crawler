@@ -81,29 +81,51 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
     try {
         console.log(`*** GET: getQuestionsAnswerAPI: ${moment().format('M-D-YY')} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
         let { date } = req.params;
+        let { category } = req.query;
         let statusCode = 404
         let message = "Please try again later";
         let result = []
         date = date ? date : moment().format('M-D-YY');
-        let resultMini = await prisma.nyt_mini.findFirst({
-            where: {
-                date: date
-            }
-        })
-        let resultMaxi = await prisma.nyt_maxi.findFirst({
-            where: {
-                date: date
-            }
-        })
-        if (!resultMaxi && !resultMini) {
-            return res.status(statusCode).json({ message: "There is no data for this date", result: [] })
+        let resultMini;
+        let resultMaxi;
+        let game;
+        let qa_id = '';
+        message = "Request done successfully";
+        if (category == 'NYT-Mini' || !category) {
+            resultMini = await prisma.nyt_mini.findFirst({
+                where: {
+                    date: date
+                }
+            })
         }
-        else if (resultMaxi && resultMini) {
-            result = [...resultMini.questions_answers, ...resultMaxi.questions_answers];
+        if (category == 'NYT-Maxi' || !category) {
+            resultMaxi = await prisma.nyt_maxi.findFirst({
+                where: {
+                    date: date
+                }
+            })
+        }
+        if (!resultMaxi && !resultMini) {
+            return res.status(statusCode).json({ message: "There is no data for this date", category, result: [] })
+        }
+        else if (resultMaxi || resultMini) {
+            if (category == 'NYT-Maxi') {
+                result = [...resultMaxi.questions_answers];
+                qa_id = resultMaxi.qa_id, game
+
+            }
+            else if (category == 'NYT-Mini') {
+                result = [...resultMini.questions_answers];
+                qa_id = resultMini.qa_id
+            }
+            else {
+                result = [...resultMini?.questions_answers, ...resultMaxi?.questions_answers];
+                category = ''
+            }
             message = "Request done successfully";
             statusCode = 200;
         }
-        return res.status(statusCode).json({ message: message, data: date, result })
+        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, data: date, result })
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
