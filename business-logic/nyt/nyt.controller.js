@@ -125,7 +125,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
             message = "Request done successfully";
             statusCode = 200;
         }
-        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, data: date, result })
+        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, date: date, result })
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
