@@ -86,9 +86,9 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         let message = "Please try again later";
         let result = []
         date = date ? date : moment().format('M-D-YY');
+        let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
         let resultMini;
         let resultMaxi;
-        let game;
         let qa_id = '';
         message = "Request done successfully";
         if (category == 'NYT-Mini' || !category) {
@@ -106,12 +106,12 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
             })
         }
         if (!resultMaxi && !resultMini) {
-            return res.status(statusCode).json({ message: "There is no data for this date", category, result: [] })
+            return res.status(statusCode).json({ message: "There is no data for this date", qa_id, date: fullDateFormat, category, result: [] })
         }
         else if (resultMaxi || resultMini) {
             if (category == 'NYT-Maxi') {
                 result = [...resultMaxi.questions_answers];
-                qa_id = resultMaxi.qa_id, game
+                qa_id = resultMaxi.qa_id
 
             }
             else if (category == 'NYT-Mini') {
@@ -125,7 +125,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
             message = "Request done successfully";
             statusCode = 200;
         }
-        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, date: date, result })
+        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, date: fullDateFormat, result })
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
@@ -221,6 +221,7 @@ const doubleCheckDataForMini = async () => {
 
 const sendDataToProductionForMini = async () => {
     const date = moment().format('M-D-YY');
+    let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
     const category = 'NYT-Mini';
     let resultMini = await prisma.nyt_mini.findFirst({
         where: {
@@ -232,7 +233,7 @@ const sendDataToProductionForMini = async () => {
         const data = JSON.stringify({
             "qa_id": resultMini.qa_id,
             'game-name': category,
-            "data": date,
+            "date": fullDateFormat,
             "result": resultMini.questions_answers
         });
         const config = {

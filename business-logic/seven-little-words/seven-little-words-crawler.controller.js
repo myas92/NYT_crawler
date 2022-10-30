@@ -41,15 +41,17 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         console.log(`*** GET: Seven-letter-words: ${moment().format('M-D-YY')} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
         let { date } = req.params;
         date = date ? date : moment().format('M-D-YY');
+        let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
+        let category = '7LW'
         let result = await prisma.seven_little_words.findFirst({
             where: {
                 date: date
             }
         })
         if (!result) {
-            return res.status(404).json({ message: "There is no data for this date", result: [] })
+            return res.status(404).json({ message: "There is no data for this date", date: fullDateFormat, category: category,  result: [] })
         }
-        return res.status(200).json({ message: "Request done successfully", data: date, result: result.questions_answers })
+        return res.status(200).json({ message: "Request done successfully", date: fullDateFormat, category: category, result: result.questions_answers })
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
