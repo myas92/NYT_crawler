@@ -86,7 +86,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         let message = "Please try again later";
         let result = []
         date = date ? date : moment().format('M-D-YY');
-        let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
+        let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
         let resultMini;
         let resultMaxi;
         let qa_id = '';
@@ -221,7 +221,7 @@ const doubleCheckDataForMini = async () => {
 
 const sendDataToProductionForMini = async () => {
     const date = moment().format('M-D-YY');
-    let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
+    let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     const category = 'NYT-Mini';
     let resultMini = await prisma.nyt_mini.findFirst({
         where: {
