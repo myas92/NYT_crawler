@@ -224,7 +224,7 @@ const doubleCheckDataForMini = async () => {
 
 const sendDataToProductionForMini = async () => {
     const date = moment().format('M-D-YY');
-    let title_date = moment().format('YYYY-MM-DD');
+    let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     const category = 'NYT-Mini';
     let resultMini = await prisma.nyt_mini.findFirst({
