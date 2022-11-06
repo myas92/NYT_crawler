@@ -86,6 +86,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         let message = "Please try again later";
         let result = []
         date = date ? date : moment().format('M-D-YY');
+        let title_date = moment().format('YYYY-MM-DD');
         let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
         let resultMini;
         let resultMaxi;
@@ -106,7 +107,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
             })
         }
         if (!resultMaxi && !resultMini) {
-            return res.status(statusCode).json({ message: "There is no data for this date", qa_id, date: fullDateFormat, category, result: [] })
+            return res.status(statusCode).json({ message: "There is no data for this date", qa_id, date: fullDateFormat, title_date, category, result: [] })
         }
         else if (resultMaxi || resultMini) {
             if (category == 'NYT-Maxi') {
@@ -221,6 +222,7 @@ const doubleCheckDataForMini = async () => {
 
 const sendDataToProductionForMini = async () => {
     const date = moment().format('M-D-YY');
+    let title_date = moment().format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     const category = 'NYT-Mini';
     let resultMini = await prisma.nyt_mini.findFirst({
@@ -233,6 +235,7 @@ const sendDataToProductionForMini = async () => {
         const data = JSON.stringify({
             "qa_id": resultMini.qa_id,
             'game-name': category,
+            "title_date": title_date,
             "date": fullDateFormat,
             "result": resultMini.questions_answers
         });
