@@ -4,6 +4,8 @@ const NytCrwaler = require('./nyt-crawler.services');
 const prisma = require('../../prisma/prisma-client');
 const statusService = require('../../config/constance/status');
 const axios = require('axios');
+const momentTZ = require('moment-timezone');
+momentTZ().tz("America/Los_Angeles").format();
 const crawlMainQuestionAnswersAPI = async (req, res, next) => {
     try {
         let { type } = req.query;
@@ -86,7 +88,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         let message = "Please try again later";
         let result = []
         date = date ? date : moment().format('M-D-YY');
-        let title_date = moment().format('YYYY-MM-DD');
+        let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
         let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
         let resultMini;
         let resultMaxi;
