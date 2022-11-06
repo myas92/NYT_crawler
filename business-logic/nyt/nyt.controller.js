@@ -107,7 +107,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
             })
         }
         if (!resultMaxi && !resultMini) {
-            return res.status(statusCode).json({ message: "There is no data for this date", qa_id, date: fullDateFormat, title_date, category, result: [] })
+            return res.status(statusCode).json({ message: "There is no data for this date", qa_id, title_date, date: fullDateFormat, category, result: [] })
         }
         else if (resultMaxi || resultMini) {
             if (category == 'NYT-Maxi') {
@@ -126,7 +126,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
             message = "Request done successfully";
             statusCode = 200;
         }
-        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, date: fullDateFormat, result })
+        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, title_date, date: fullDateFormat, result })
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
