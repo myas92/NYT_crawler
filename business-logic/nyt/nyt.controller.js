@@ -5,13 +5,14 @@ const prisma = require('../../prisma/prisma-client');
 const statusService = require('../../config/constance/status');
 const axios = require('axios');
 const momentTZ = require('moment-timezone');
-momentTZ().tz("America/Los_Angeles").format();
+const { currentTehranDate } = require("../../utils/helper");
+
 const crawlMainQuestionAnswersAPI = async (req, res, next) => {
     try {
         let { type } = req.query;
         let questionsAnswers
         console.log('---------------------- Crawler started for NYT API --------------------')
-        date = moment().format('M-D-YY');
+        date = currentTehranDate();
         let nyt = new NytCrwaler(date);
         if (type == "mini") {
             questionsAnswers = await nyt.getAllQuestionAnswersForMini()
@@ -28,7 +29,7 @@ const crawlMainQuestionAnswersAPI = async (req, res, next) => {
 const crawlMainQuestionAnswersForMini = async () => {
     try {
         console.log('---------------------- Started: Mini NYT --------------------')
-        date = moment().format('M-D-YY');
+        date = currentTehranDate();
         let nyt = new NytCrwaler(date);
         let questionsAnswers = await nyt.getAllQuestionAnswersForMini()
         console.log('---------------------- Ended: Mini NYT --------------------')
@@ -39,7 +40,7 @@ const crawlMainQuestionAnswersForMini = async () => {
 const crawlMainQuestionAnswersForMaxi = async () => {
     try {
         console.log('---------------------- Started: Maxi NYT --------------------')
-        date = moment().format('M-D-YY');
+        date = currentTehranDate();
         let nyt = new NytCrwaler(date);
         let questionsAnswers = await nyt.getAllQuestionAnswersForMaxi()
         console.log('---------------------- Ended: Maxi NYT--------------------')
@@ -55,7 +56,7 @@ const crawlQuestionsAnswersBasedLinksAPI = async (req, res, next) => {
     try {
         let { date, type } = req?.query;
         let answers;
-        date = date ? date : moment().format('M-D-YY');
+        date = date ? date : currentTehranDate();
         type = type ? type : 'mini';
         let nyt = new NytCrwaler(date);
         let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePage()
@@ -87,7 +88,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         let statusCode = 404
         let message = "Please try again later";
         let result = []
-        date = date ? date : moment().format('M-D-YY');
+        date = date ? date : currentTehranDate();
         let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
         let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
         let resultMini;
@@ -138,7 +139,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         return next(errors);
     }
 };
-const crawlQuestionsAnswers = async (inputDate = moment().format('M-D-YY')) => {
+const crawlQuestionsAnswers = async (inputDate = currentTehranDate()) => {
     try {
         let answers;
         console.log('---------------------- Crawler started for NYT --------------------')
@@ -168,7 +169,7 @@ const crawlQuestionsAnswers = async (inputDate = moment().format('M-D-YY')) => {
 
 
 const doubleCheckDataForMini = async () => {
-    let date = moment().format('M-D-YY');
+    let date = currentTehranDate();
     let mini = await prisma.nyt_mini.findFirst({
         where: {
             date: date
@@ -180,7 +181,7 @@ const doubleCheckDataForMini = async () => {
         let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePage()
         if (questionlinksInfo) {
             console.log("########################### Double Check for Mini -- There is no data (1) ##########################");
-            console.log(moment().format('M-D-YY'))
+            console.log(currentTehranDate())
             console.log("########################### Double Check for Mini -- There is no data (1) ##########################");
             let { id, date, questions, url } = questionlinksInfo;
             let requestInfo = await prisma.nyt.findFirst({
@@ -209,7 +210,7 @@ const doubleCheckDataForMini = async () => {
             })
             if (isValid == false) {
                 console.log("########################### Double Check for Mini -- Old data is invalid (2) ##########################");
-                console.log(moment().format('M-D-YY'))
+                console.log(currentTehranDate())
                 console.log("########################### Double Check for Mini -- Old data is invalid  (2) ##########################");
                 let { id, date, questions, url } = questionlinksInfo;
                 let requestInfo = await prisma.nyt.findFirst({
@@ -223,7 +224,7 @@ const doubleCheckDataForMini = async () => {
 
 
 const sendDataToProductionForMini = async () => {
-    const date = moment().format('M-D-YY');
+    const date = currentTehranDate();
     let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     const category = 'NYT-Mini';

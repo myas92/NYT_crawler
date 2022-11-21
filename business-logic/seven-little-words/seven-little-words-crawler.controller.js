@@ -9,7 +9,7 @@ const crawlSevenLittleWordsAPI = async (req, res, next) => {
         let { date } = req.query
         let questionsAnswers;
         console.log('---------------------- Crawler started for ** Seven Little Words ** API --------------------')
-        date = date ? date : moment().format('M-D-YY');
+        date = date ? date : currentTehranDate();
         let sevenLittleWords = new SevenLittleWordsCrwalerService(date);
         questionsAnswers = await sevenLittleWords.getQuestionAnswer()
         console.log('---------------------- Crawler ended for ** Seven Little Words **  API--------------------')
@@ -22,7 +22,7 @@ const crawlSevenLittleWords = async () => {
     try {
         let questionsAnswers;
         console.log('---------------------- Crawler started for ** Seven Little Words ** API --------------------')
-        date = moment().format('M-D-YY');
+        date = currentTehranDate();
         let sevenLittleWords = new SevenLittleWordsCrwalerService(date);
         questionsAnswers = await sevenLittleWords.getQuestionAnswer()
         console.log('---------------------- Crawler ended for ** Seven Little Words **  API--------------------')
@@ -38,9 +38,9 @@ const crawlSevenLittleWords = async () => {
 
 const getQuestionsAnswerAPI = async (req, res, next) => {
     try {
-        console.log(`*** GET: Seven-letter-words: ${moment().format('M-D-YY')} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
+        console.log(`*** GET: Seven-letter-words: ${currentTehranDate()} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
         let { date } = req.params;
-        date = date ? date : moment().format('M-D-YY');
+        date = date ? date :currentTehranDate();
         let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
         let category = '7LW'
         let result = await prisma.seven_little_words.findFirst({
