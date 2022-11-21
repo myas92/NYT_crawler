@@ -6,7 +6,7 @@ const nytController = require("../business-logic/nyt/nyt.controller");
 let firstJobForMini = new CronJob(
     // '10,15,20,30,40 0 22 * * sat,sun',
     // '10,15,20,30,40 0 23 * * sat,sun', Etc/UTC
-    '10,15,20,30,40 0 18 * * sat,sun',
+    '10,50 0-1 18 * * sat,sun',
     async function () {
         console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
         await nytController.crawlMainQuestionAnswersForMini()
@@ -19,7 +19,7 @@ let firstJobForMini = new CronJob(
 
 let firstJobForMiniDoubleCheck = new CronJob(
     // '0 4 22 * * sat,sun',
-    '0 4 18 * * sat,sun',
+    '0 2 18 * * sat,sun',
     async function () {
         console.log('DoubleCheck--->', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
         await nytController.doubleCheckDataForMini()
@@ -35,7 +35,7 @@ let firstJobForMiniDoubleCheck = new CronJob(
 let secondJobForMini = new CronJob(
     // '*/5 9 9 * * sat,tue,wed,thu,fri',
     // '10,15,20,30,40 0 2 * * sat,tue,wed,thu,fri',
-    '10,15,20,30,40 0 22 * * sat,tue,wed,thu,fri',
+    '10,50 0-1 22 * * sat,tue,wed,thu,fri',
     async function () {
         console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
         await nytController.crawlMainQuestionAnswersForMini()
@@ -49,7 +49,7 @@ let secondJobForMini = new CronJob(
 let secondJobForMiniDoubleCheck = new CronJob(
     // '*/5 9 9 * * sat,tue,wed,thu,fri',
     // '0 4 2 * * sat,tue,wed,thu,fri',
-    '0 4 22 * * sat,tue,wed,thu,fri',
+    '0 2 22 * * sat,tue,wed,thu,fri',
     async function () {
         console.log('DoubleCheck--->', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
         await nytController.doubleCheckDataForMini()
@@ -64,7 +64,7 @@ let secondJobForMiniDoubleCheck = new CronJob(
 // ارسال داده ها به سمت سرور عملباتی در روزهای کاری
 let firstSendDataToProductionForMini = new CronJob(
     // '30 4 22 * * sat,sun',
-    '30 4 18 * * sat,sun',
+    '30 2 18 * * sat,sun',
     async function () {
         console.log('Send data for game-mini', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
         await nytController.sendDataToProductionForMini()
@@ -76,7 +76,7 @@ let firstSendDataToProductionForMini = new CronJob(
 // ارسال داده ها به سمت سرور عملباتی در روزهای کاری
 let secondsendDataToProductionForMini = new CronJob(
     // '30 4 2 * * sat,tue,wed,thu,fri',
-    '30 4 22 * * sat,tue,wed,thu,fri',
+    '30 2 22 * * sat,tue,wed,thu,fri',
     async function () {
         console.log('Send data for game-mini', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
         await nytController.sendDataToProductionForMini()

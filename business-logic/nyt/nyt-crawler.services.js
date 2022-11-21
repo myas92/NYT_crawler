@@ -9,7 +9,7 @@ const statusService = require('../../config/constance/status');
 const fs = require('fs');
 const { del } = require('q');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-const {randomBytes} = require('crypto');
+const { randomBytes } = require('crypto');
 class NytCrwalerService {
     constructor(inputDate) {
         this.date = inputDate
@@ -41,13 +41,24 @@ class NytCrwalerService {
             if (requestInfo.questions_answers == null || requestInfo.questions_answers?.length == 0) {
                 // ارسال درخواست به سایت
                 let responseMiniCross;
-                responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
-                // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
-                let isValidMiniContent = this.isValidContent(responseMiniCross.data, 'NYT Mini Crossword Answers');
-                if (!isValidMiniContent) {
+                let isValidMiniContent;
+                let requestNumber = new Array(5).fill(0);
+                for (let request of requestNumber) {
+                    responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
+                    // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
+                    isValidMiniContent = this.isValidContent(responseMiniCross.data, 'NYT Mini Crossword Answers');
+                    if (!isValidMiniContent) {
+                        throw new Error('Content is not valid')
+                    }
+                    if (isValidMaxiContent)
+                        break;
+                    await delay(5000)
+                }
+                if (!isValidMaxiContent) {
                     throw new Error('Content is not valid')
                 }
                 // fs.writeFileSync(`./body/mini_${this.date}.html`, responseMiniCross.data)
+
                 // استخراج لینک و عنوان و نوع سوال
 
                 const questionsAnswersMiniCross = this.extractQuestionsAnswers(responseMiniCross.data, "mini-cross");
