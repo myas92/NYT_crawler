@@ -55,14 +55,14 @@ class NytCrwalerService {
                     await delay(5000)
                 }
                 if (!isValidMaxiContent) {
-                    throw new Error('Content is not valid')
+                    throw new Error('Content is not valid for [Mini] in title')
                 }
                 // fs.writeFileSync(`./body/mini_${this.date}.html`, responseMiniCross.data)
 
                 // استخراج لینک و عنوان و نوع سوال
 
                 const questionsAnswersMiniCross = this.extractQuestionsAnswers(responseMiniCross.data, "mini-cross");
-                if (questionsAnswersMiniCross) {
+                if (questionsAnswersMiniCross && questionsAnswersMiniCross?.length < 30) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
                     await prisma.nyt_mini.update({
                         where: { id: requestInfo.id },
@@ -72,6 +72,9 @@ class NytCrwalerService {
                         },
                     });
 
+                }
+                else{
+                    throw new Error('Content is not valid for [Mini] in length')
                 }
                 return questionsAnswersMiniCross
             }
@@ -105,18 +108,19 @@ class NytCrwalerService {
                 let requestNumber = new Array(5).fill(0)
                 for (let request of requestNumber) {
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
+                    // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
                     isValidMaxiContent = this.isValidContent(responseMaxiCross.data, 'NYT Crossword Answers')
                     if (isValidMaxiContent)
                         break;
                     await delay(5000)
                 }
                 if (!isValidMaxiContent) {
-                    throw new Error('Content is not valid')
+                    throw new Error('Content is not valid for [Maxi] in title')
                 }
                 // استخراج لینک و عنوان و نوع سوال
 
                 const questionsAnswersMaxiCross = this.extractQuestionsAnswers(responseMaxiCross.data, "maxi-cross");
-                if (questionsAnswersMaxiCross) {
+                if (questionsAnswersMaxiCross && questionsAnswersMaxiCross?.length > 30) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
                     await prisma.nyt_maxi.update({
                         where: { id: requestInfo.id },
@@ -126,6 +130,9 @@ class NytCrwalerService {
                         },
                     });
 
+                }
+                else{
+                    throw new Error('Content is not valid for [Maxi] in length')
                 }
                 return questionsAnswersMaxiCross
             }
