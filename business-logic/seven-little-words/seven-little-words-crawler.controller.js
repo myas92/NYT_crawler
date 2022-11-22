@@ -3,6 +3,7 @@ const moment = require('moment-jalaali');
 const SevenLittleWordsCrwalerService = require('./seven-little-words-crawler.services');
 const prisma = require('../../prisma/prisma-client');
 const statusService = require('../../config/constance/status');
+const { currentTehranDate } = require("../../utils/helper");
 
 const crawlSevenLittleWordsAPI = async (req, res, next) => {
     try {
