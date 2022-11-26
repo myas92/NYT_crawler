@@ -89,7 +89,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         let message = "Please try again later";
         let result = []
         date = date ? date : currentTehranDate();
-        let title_date = date ? date : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
+        let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
         let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
         let resultMini;
         let resultMaxi;
