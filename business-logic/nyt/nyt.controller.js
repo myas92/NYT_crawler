@@ -83,7 +83,7 @@ const crawlQuestionsAnswersBasedLinksAPI = async (req, res, next) => {
 const getQuestionsAnswerAPI = async (req, res, next) => {
     try {
         console.log(`*** GET: getQuestionsAnswerAPI: ${moment().format('M-D-YY')} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
-        let { date } = req.params;
+        let { date } = req.query;
         let { category } = req.query;
         let statusCode = 404
         let message = "Please try again later";
