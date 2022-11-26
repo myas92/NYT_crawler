@@ -45,19 +45,17 @@ class NytCrwalerService {
                 let requestNumber = new Array(5).fill(0);
                 for (let request of requestNumber) {
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
+                    fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
-                    isValidMiniContent = this.isValidContent(responseMiniCross.data, 'NYT Mini Crossword Answers');
-                    if (!isValidMiniContent) {
-                        throw new Error('Content is not valid')
-                    }
-                    if (isValidMaxiContent)
+                    isValidMiniContent = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers');
+                    if (isValidMiniContent)
                         break;
                     await delay(5000)
                 }
-                if (!isValidMaxiContent) {
+                if (!isValidMiniContent) {
                     throw new Error('Content is not valid for [Mini] in title')
                 }
-                // fs.writeFileSync(`./body/mini_${this.date}.html`, responseMiniCross.data)
+                
 
                 // استخراج لینک و عنوان و نوع سوال
 
@@ -109,7 +107,8 @@ class NytCrwalerService {
                 for (let request of requestNumber) {
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
                     // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
-                    isValidMaxiContent = this.isValidContent(responseMaxiCross.data, 'NYT Crossword Answers')
+                    fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross.data)
+                    isValidMaxiContent = this.isValidContent(responseMaxiCross.data, 'nyt crossword answers')
                     if (isValidMaxiContent)
                         break;
                     await delay(5000)
@@ -181,7 +180,7 @@ class NytCrwalerService {
     isValidContent(html, title) {
         let isValid = false;
         let $ = cheerio.load(html);
-        let content = $('.entry-content > .parent').text()
+        let content = $('.entry-content > p:nth-child(7) > a').text().toLowerCase()
         if (title == content) {
             isValid = true
         }

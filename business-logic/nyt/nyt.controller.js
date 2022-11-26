@@ -265,6 +265,7 @@ const sendDataToProductionForMini = async () => {
             })
 
         } catch (error) {
+            console.log("Send Data to Wordpress:\n", error)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMini.qa_id,
