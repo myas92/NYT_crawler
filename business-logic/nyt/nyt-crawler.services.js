@@ -55,7 +55,6 @@ class NytCrwalerService {
                 if (!isValidMiniContent) {
                     throw new Error('Content is not valid for [Mini] in title')
                 }
-                
 
                 // استخراج لینک و عنوان و نوع سوال
 
@@ -71,7 +70,7 @@ class NytCrwalerService {
                     });
 
                 }
-                else{
+                else {
                     throw new Error('Content is not valid for [Mini] in length')
                 }
                 return questionsAnswersMiniCross
@@ -106,7 +105,7 @@ class NytCrwalerService {
                 let requestNumber = new Array(5).fill(0)
                 for (let request of requestNumber) {
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
-                    // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
+                    // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/nyt/maxi.html', 'utf-8')
                     fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross.data)
                     isValidMaxiContent = this.isValidContent(responseMaxiCross.data, 'nyt crossword answers')
                     if (isValidMaxiContent)
@@ -117,7 +116,6 @@ class NytCrwalerService {
                     throw new Error('Content is not valid for [Maxi] in title')
                 }
                 // استخراج لینک و عنوان و نوع سوال
-
                 const questionsAnswersMaxiCross = this.extractQuestionsAnswers(responseMaxiCross.data, "maxi-cross");
                 if (questionsAnswersMaxiCross && questionsAnswersMaxiCross?.length > 30) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
@@ -130,7 +128,7 @@ class NytCrwalerService {
                     });
 
                 }
-                else{
+                else {
                     throw new Error('Content is not valid for [Maxi] in length')
                 }
                 return questionsAnswersMaxiCross
@@ -179,10 +177,23 @@ class NytCrwalerService {
 
     isValidContent(html, title) {
         let isValid = false;
+        let questions = [];
         let $ = cheerio.load(html);
-        let content = $('.entry-content > p:nth-child(7) > a').text().toLowerCase()
-        if (title == content) {
+        let content = $('.entry-content > p:nth-child(7) > a').text().toLowerCase();
+        $('.entry-content > div').each(function () {
+            const link = $(this).find('.tips_block a').attr('href');
+            if (link && link.includes('http')) {
+                let obj = {
+                    link: link,
+                }
+                questions.push(obj)
+            }
+        });
+        if (title == content && questions.length == 0) {
             isValid = true
+        }
+        if( questions.length > 0){
+            console.log("^^^^^^^^^^^^^^^^^   I found Question link :( ^^^^^^^^^^^^^^^^^^^^")
         }
         return isValid
     }
