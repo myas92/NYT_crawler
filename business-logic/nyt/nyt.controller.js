@@ -223,7 +223,7 @@ const doubleCheckDataForMini = async () => {
 }
 
 
-const sendDataToProductionForMini = async () => {
+const sendDataToProductionForMini = async (req, res) => {
     const date = currentTehranDate();
     let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
@@ -278,6 +278,10 @@ const sendDataToProductionForMini = async () => {
 
         }
 
+
+    }
+    if (res) {
+        res.send({ message: 'Request done successfully' })
     }
 }
 const sendDataToProductionForMaxi = async () => {
