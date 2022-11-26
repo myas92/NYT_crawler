@@ -254,7 +254,8 @@ const sendDataToProductionForMini = async () => {
         };
         try {
 
-            const response = await axios(config)
+            const response = await axios(config);
+            console.log("Send Data to Wordpress Success:\n", response.data)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMini.qa_id,
