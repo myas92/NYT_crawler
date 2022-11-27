@@ -40,8 +40,9 @@ const crawlSevenLittleWords = async () => {
 const getQuestionsAnswerAPI = async (req, res, next) => {
     try {
         console.log(`*** GET: Seven-letter-words: ${currentTehranDate()} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
-        let { date } = req.params;
-        date = date ? date :currentTehranDate();
+        let { date } = req.query;
+        date = date ? date : currentTehranDate();
+        let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
         let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
         let category = '7LW'
         let result = await prisma.seven_little_words.findFirst({
@@ -50,9 +51,9 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
             }
         })
         if (!result) {
-            return res.status(404).json({ message: "There is no data for this date", date: fullDateFormat, category: category,  result: [] })
+            return res.status(404).json({ message: "There is no data for this date", date: fullDateFormat, qa_id: '', title_date, category: category, result: [] })
         }
-        return res.status(200).json({ message: "Request done successfully", date: fullDateFormat, category: category, result: result.questions_answers })
+        return res.status(200).json({ message: "Request done successfully", qa_id: result.qa_id, title_date, date: fullDateFormat, category: category, result: result.questions_answers, })
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
