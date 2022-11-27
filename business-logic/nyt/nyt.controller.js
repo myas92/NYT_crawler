@@ -255,7 +255,7 @@ const sendDataToProductionForMini = async (req, res) => {
         try {
 
             const response = await axios(config);
-            console.log("Send Data to Wordpress Success:\n", response.data)
+            console.log("Send Data to Wordpress Success [--Maini--]:\n", response.data)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMini.qa_id,
@@ -266,7 +266,7 @@ const sendDataToProductionForMini = async (req, res) => {
             })
 
         } catch (error) {
-            console.log("Send Data to Wordpress:\n", error)
+            console.log("Send Data to Wordpress [--Mini--]:\n", error)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMini.qa_id,
@@ -281,11 +281,69 @@ const sendDataToProductionForMini = async (req, res) => {
 
     }
     if (res) {
-        res.send({ message: 'Request done successfully' })
+        res.send({ message: 'Request done successfully for Mini' })
     }
 }
-const sendDataToProductionForMaxi = async () => {
-    console.log("maxi")
+const sendDataToProductionForMaxi = async (req, res) => {
+    const date = currentTehranDate();
+    let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
+    let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
+    const category = 'NYT-Maxi';
+    let resultMaxi = await prisma.nyt_maxi.findFirst({
+        where: {
+            date: date
+        }
+    })
+
+    if (resultMaxi && resultMaxi?.questions_answers.length > 1) {
+        const data = JSON.stringify({
+            "qa_id": resultMaxi.qa_id,
+            'game-name': category,
+            "title_date": title_date,
+            "date": fullDateFormat,
+            "result": resultMaxi.questions_answers
+        });
+        const config = {
+            method: 'post',
+            url: process.env.SPEEADREADINGS_URL_MAXI,
+            headers: {
+                'Game-name': category,
+                'Authorization': process.env.SPEEADREADINGS_PASSWORD,
+                'Content-Type': 'application/json'
+            },
+            data: data
+        };
+        try {
+
+            const response = await axios(config);
+            console.log("Send Data to Wordpress Success [--Maxi--]:\n", response.data)
+            await prisma.response_info.create({
+                data: {
+                    qa_id: resultMaxi.qa_id,
+                    category: category,
+                    date: resultMaxi.date,
+                    response: response.data?.message,
+                }
+            })
+
+        } catch (error) {
+            console.log("Send Data to Wordpress [--Maxi--]:\n", error)
+            await prisma.response_info.create({
+                data: {
+                    qa_id: resultMaxi.qa_id,
+                    category: category,
+                    date: resultMaxi.date,
+                    response: error.message,
+                }
+            })
+
+        }
+
+
+    }
+    if (res) {
+        res.send({ message: 'Request done successfully for Maxi' })
+    }
 }
 
 exports.crawlMainQuestionAnswersAPI = crawlMainQuestionAnswersAPI
