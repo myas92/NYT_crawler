@@ -68,14 +68,14 @@ class NytCrwalerService {
                             status: statusService.FINISH
                         },
                     });
+                    return { questionsAnswers: questionsAnswersMiniCross, message: 'done' }
 
                 }
                 else {
                     throw new Error('Content is not valid for [Mini] in length')
                 }
-                return questionsAnswersMiniCross
             }
-            return requestInfo.questions_answers
+            return { questionsAnswers: requestInfo.questions_answers, message: '' }
         } catch (error) {
             console.log(error)
         }
@@ -126,14 +126,15 @@ class NytCrwalerService {
                             status: statusService.FINISH
                         },
                     });
-
+                    return { questionsAnswers: questionsAnswersMaxiCross, message: 'done' }
                 }
                 else {
                     throw new Error('Content is not valid for [Maxi] in length')
                 }
-                return questionsAnswersMaxiCross
+                
+          
             }
-            return requestInfo.questions_answers
+            return { questionsAnswers: requestInfo.questions_answers, message: '' }
         } catch (error) {
             console.log(error)
         }
@@ -192,7 +193,7 @@ class NytCrwalerService {
         if (title == content && questions.length == 0) {
             isValid = true
         }
-        if( questions.length > 0){
+        if (questions.length > 0) {
             console.log("^^^^^^^^^^^^^^^^^   I found Question link :( ^^^^^^^^^^^^^^^^^^^^")
         }
         return isValid

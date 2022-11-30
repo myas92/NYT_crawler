@@ -36,26 +36,26 @@ let secondJobForMaxi = new CronJob(
 
 
 // ارسال داده ها به سمت سرور عملباتی در روزهای کاری
-let firstSendDataToProductionForMaxi = new CronJob(
-    // '0 2 22 * * sat,sun',
-    patternSendDataWeekends,
-    async function () {
-        console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
-        await nytController.sendDataToProductionForMaxi()
-    },
-    null,
-    true,
-    'America/New_York'
-);
+// let firstSendDataToProductionForMaxi = new CronJob(
+//     // '0 2 22 * * sat,sun',
+//     patternSendDataWeekends,
+//     async function () {
+//         console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
+//         await nytController.sendDataToProductionForMaxi()
+//     },
+//     null,
+//     true,
+//     'America/New_York'
+// );
 // ارسال داده ها به سمت سرور عملباتی در روزهای کاری
-let secondsendDataToProductionForMaxi = new CronJob(
-    // '0 2 2 * * sat,tue,wed,thu,fri',
-    patternSendDataWeekdays,
-    async function () {
-        console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
-        await nytController.sendDataToProductionForMaxi()
-    },
-    null,
-    true,
-    'America/New_York'
-);
+// let secondsendDataToProductionForMaxi = new CronJob(
+//     // '0 2 2 * * sat,tue,wed,thu,fri',
+//     patternSendDataWeekdays,
+//     async function () {
+//         console.log(moment().format('jYYYY/jMM/jDD HH:mm:ss'))
+//         await nytController.sendDataToProductionForMaxi()
+//     },
+//     null,
+//     true,
+//     'America/New_York'
+// );

@@ -10,18 +10,26 @@ const { currentTehranDate } = require("../../utils/helper");
 const crawlMainQuestionAnswersAPI = async (req, res, next) => {
     try {
         let { type } = req.query;
-        let questionsAnswers
+        let questionsAnswersResult
         console.log('---------------------- Crawler started for NYT API --------------------')
         date = currentTehranDate();
         let nyt = new NytCrwaler(date);
         if (type == "mini") {
-            questionsAnswers = await nyt.getAllQuestionAnswersForMini()
+            const { questionsAnswers, message } = await nyt.getAllQuestionAnswersForMini();
+            questionsAnswersResult = questionsAnswers
+            if (message == 'done') {
+                await sendDataToProductionForMini()
+            }
         }
         if (type == "maxi") {
-            questionsAnswers = await nyt.getAllQuestionAnswersForMaxi()
+            const { questionsAnswers, message }  = await nyt.getAllQuestionAnswersForMaxi();
+            if (message == 'done') {
+                await sendDataToProductionForMaxi()
+            }
+            questionsAnswersResult = questionsAnswers
         }
         console.log('---------------------- Crawler ended for NYT  API--------------------')
-        return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
+        return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswersResult })
     } catch (error) {
         console.log(error)
     }
@@ -31,7 +39,11 @@ const crawlMainQuestionAnswersForMini = async () => {
         console.log('---------------------- Started: Mini NYT --------------------')
         date = currentTehranDate();
         let nyt = new NytCrwaler(date);
-        let questionsAnswers = await nyt.getAllQuestionAnswersForMini()
+        const { questionsAnswers, message } = await nyt.getAllQuestionAnswersForMini();
+        if (message == 'done') {
+            console.log(" ************** Got mini---> Send Data to WP ************** ")
+            await sendDataToProductionForMini()
+        }
         console.log('---------------------- Ended: Mini NYT --------------------')
     } catch (error) {
         console.log(error)
@@ -42,7 +54,11 @@ const crawlMainQuestionAnswersForMaxi = async () => {
         console.log('---------------------- Started: Maxi NYT --------------------')
         date = currentTehranDate();
         let nyt = new NytCrwaler(date);
-        let questionsAnswers = await nyt.getAllQuestionAnswersForMaxi()
+        const { questionsAnswers, message }= await nyt.getAllQuestionAnswersForMaxi();
+        if (message == 'done') {
+            console.log(" ************** Got maxi---> Send Data to WP ************** ")
+            await sendDataToProductionForMaxi()
+        }
         console.log('---------------------- Ended: Maxi NYT--------------------')
     } catch (error) {
         console.log(error)

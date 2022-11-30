@@ -66,26 +66,26 @@ let secondJobForMini = new CronJob(
 
 
 // ارسال داده ها به سمت سرور عملباتی در روزهای کاری
-let firstSendDataToProductionForMini = new CronJob(
-    // '30 4 22 * * sat,sun',
-    patternSendDataWeekends,
-    async function () {
-        console.log('----> Send data for game-mini <----', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
-        await nytController.sendDataToProductionForMini()
-    },
-    null,
-    true,
-    'America/New_York'
-);
+// let firstSendDataToProductionForMini = new CronJob(
+//     // '30 4 22 * * sat,sun',
+//     patternSendDataWeekends,
+//     async function () {
+//         console.log('----> Send data for game-mini <----', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
+//         await nytController.sendDataToProductionForMini()
+//     },
+//     null,
+//     true,
+//     'America/New_York'
+// );
 // ارسال داده ها به سمت سرور عملباتی در روزهای کاری
-let secondsendDataToProductionForMini = new CronJob(
-    // '30 4 2 * * sat,tue,wed,thu,fri',
-    patternSendDataWeekdays,
-    async function () {
-        console.log('----> Send data for game-mini <----', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
-        await nytController.sendDataToProductionForMini()
-    },
-    null,
-    true,
-    'America/New_York'
-);
+// let secondsendDataToProductionForMini = new CronJob(
+//     // '30 4 2 * * sat,tue,wed,thu,fri',
+//     patternSendDataWeekdays,
+//     async function () {
+//         console.log('----> Send data for game-mini <----', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
+//         await nytController.sendDataToProductionForMini()
+//     },
+//     null,
+//     true,
+//     'America/New_York'
+// );
