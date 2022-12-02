@@ -42,7 +42,7 @@ class NytCrwalerService {
                 // ارسال درخواست به سایت
                 let responseMiniCross;
                 let isValidMiniContent;
-                let requestNumber = new Array(5).fill(0);
+                let requestNumber = new Array(12).fill(0);
                 for (let request of requestNumber) {
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                     fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
@@ -50,7 +50,7 @@ class NytCrwalerService {
                     isValidMiniContent = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers');
                     if (isValidMiniContent)
                         break;
-                    await delay(5000)
+                    await delay(2000)
                 }
                 if (!isValidMiniContent) {
                     throw new Error('Content is not valid for [Mini] in title')
