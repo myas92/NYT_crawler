@@ -42,14 +42,19 @@ class NytCrwalerService {
                 // ارسال درخواست به سایت
                 let responseMiniCross;
                 let isValidMiniContent;
-                let requestNumber = new Array(12).fill(0);
+                let countMini = 0;
+                let requestNumber = new Array(24).fill(0);
                 for (let request of requestNumber) {
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                     fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
                     isValidMiniContent = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers');
-                    if (isValidMiniContent)
+                    if (isValidMiniContent) {
+                        console.log(`-----------((((((((((MINI:${countMini})))))))))))))----------`)
                         break;
+
+                    }
+                    countMini = countMini + 1;
                     await delay(2000)
                 }
                 if (!isValidMiniContent) {
@@ -102,15 +107,19 @@ class NytCrwalerService {
                 // ارسال درخواست به سایت
                 let responseMaxiCross;
                 let isValidMaxiContent
-                let requestNumber = new Array(5).fill(0)
+                let requestNumber = new Array(24).fill(0);
+                let countMaxi = 0;
                 for (let request of requestNumber) {
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
                     // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/nyt/maxi.html', 'utf-8')
                     fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross.data)
                     isValidMaxiContent = this.isValidContent(responseMaxiCross.data, 'nyt crossword answers')
-                    if (isValidMaxiContent)
+                    if (isValidMaxiContent) {
+                        console.log(`-----------((((((((((MAXI:${countMaxi})))))))))))))----------`)
                         break;
-                    await delay(5000)
+                    }
+                    countMaxi = countMaxi + 1;
+                    await delay(2000)
                 }
                 if (!isValidMaxiContent) {
                     throw new Error('Content is not valid for [Maxi] in title')
@@ -131,8 +140,8 @@ class NytCrwalerService {
                 else {
                     throw new Error('Content is not valid for [Maxi] in length')
                 }
-                
-          
+
+
             }
             return { questionsAnswers: requestInfo.questions_answers, message: '' }
         } catch (error) {

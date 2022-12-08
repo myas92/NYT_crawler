@@ -303,7 +303,7 @@ const sendDataToProductionForMini = async (req, res) => {
 const sendDataToProductionForMaxi = async (req, res) => {
     const date = currentTehranDate();
     let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
-    let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
+    let fullDateFormat = moment().utc().subtract(5,'minutes').format('YYYY-MM-DD HH:mm:ss'); // -5 minutes for maxi
     const category = 'NYT-Maxi';
     let resultMaxi = await prisma.nyt_maxi.findFirst({
         where: {
