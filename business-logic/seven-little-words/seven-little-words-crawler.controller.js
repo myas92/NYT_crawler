@@ -1,9 +1,10 @@
 const HttpError = require("../../utils/http-error");
 const moment = require('moment-jalaali');
+const axios = require('axios');
 const SevenLittleWordsCrwalerService = require('./seven-little-words-crawler.services');
 const prisma = require('../../prisma/prisma-client');
 const statusService = require('../../config/constance/status');
-const { currentTehranDate } = require("../../utils/helper");
+const { currentTehranDate, tommarowTehranDate } = require("../../utils/helper");
 
 const crawlSevenLittleWordsAPI = async (req, res, next) => {
     try {
@@ -23,9 +24,10 @@ const crawlSevenLittleWords = async () => {
     try {
         let questionsAnswers;
         console.log('---------------------- Crawler started for ** Seven Little Words ** API --------------------')
-        date = currentTehranDate();
+        date = tommarowTehranDate();
         let sevenLittleWords = new SevenLittleWordsCrwalerService(date);
         questionsAnswers = await sevenLittleWords.getQuestionAnswer()
+        await sendDataToProductionForSevenLittlesWords()
         console.log('---------------------- Crawler ended for ** Seven Little Words **  API--------------------')
     } catch (error) {
         console.log(error)
@@ -39,9 +41,9 @@ const crawlSevenLittleWords = async () => {
 
 const getQuestionsAnswerAPI = async (req, res, next) => {
     try {
-        console.log(`*** GET: Seven-letter-words: ${currentTehranDate()} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
+        console.log(`*** GET: Seven-letter-words: ${tommarowTehranDate()} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
         let { date } = req.query;
-        date = date ? date : currentTehranDate();
+        date = date ? date : tommarowTehranDate();
         let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
         let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
         let category = '7LW'
@@ -65,6 +67,69 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
 };
 
 
+const sendDataToProductionForSevenLittlesWords = async (req, res) => {
+    date = date ? date : tommarowTehranDate();
+    let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
+    let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
+    let category = '7LW'
+    let result = await prisma.seven_little_words.findFirst({
+        where: {
+            date: date
+        }
+    })
+
+    if (result && result?.questions_answers.length > 1) {
+        const data = JSON.stringify({
+            "qa_id": result.qa_id,
+            'game-name': category,
+            "title_date": title_date,
+            "date": fullDateFormat,
+            "result": result.questions_answers
+        });
+        const config = {
+            method: 'post',
+            url: process.env.SPEEADREADINGS_URL_7LW,
+            headers: {
+                'Game-name': category,
+                'Authorization': process.env.SPEEADREADINGS_PASSWORD,
+                'Content-Type': 'application/json'
+            },
+            data: data
+        };
+        try {
+
+            const response = await axios(config);
+            console.log("Send Data to Wordpress Success [--Seven Little Words--]:\n", response.data)
+            await prisma.response_info.create({
+                data: {
+                    qa_id: result.qa_id,
+                    category: category,
+                    date: result.date,
+                    response: response.data?.message,
+                }
+            })
+
+        } catch (error) {
+            console.log("Send Data to Wordpress Error [--Seven Little Words--]:\n", error)
+            await prisma.response_info.create({
+                data: {
+                    qa_id: result.qa_id,
+                    category: category,
+                    date: result.date,
+                    response: error.message,
+                }
+            })
+
+        }
+
+
+    }
+    if (res) {
+        res.send({ message: 'Request done successfully for Maxi' })
+    }
+}
+
 exports.crawlSevenLittleWordsAPI = crawlSevenLittleWordsAPI
 exports.crawlSevenLittleWords = crawlSevenLittleWords
 exports.getQuestionsAnswerAPI = getQuestionsAnswerAPI
+exports.sendDataToProductionForSevenLittlesWords = sendDataToProductionForSevenLittlesWords
