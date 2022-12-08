@@ -42,7 +42,7 @@ class NytCrwalerService {
                 // ارسال درخواست به سایت
                 let responseMiniCross;
                 let isValidMiniContent;
-
+                let extractedAnswersSecondRequest;
                 let extractedAnswers;
                 let countMini = 0;
                 let requestNumber = new Array(24).fill(0);
@@ -50,18 +50,29 @@ class NytCrwalerService {
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                     fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
-
+                    // responseMiniCross = fs.readFileSync('C:/Users/yaser ahmadi/Desktop/nyt-tem/mini_1.html', 'utf-8')
                     let { statusContent, questions } = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers');
                     isValidMiniContent = statusContent;
-                    if (isValidMiniContent){
+                    if (isValidMiniContent == 1) {
                         console.log(`-----------((((((((((MINI:${countMini})))))))))))))----------`)
                         break;
                     }
-                    
-                    if (isValidMaxiContent == 2) {  // have question link
+
+                    if (isValidMiniContent == 2) {  // have question link
+                        console.log("---------!!!!!!!!!Find link in [MINI] --------------");
                         extractedAnswers = await this.getAnswersByQuestionLinkInMiddleCrawling(questions);
-                        if (extractedAnswers.length > 0)
+                        if (extractedAnswers.length == questions.length)
                             break;
+                        else {
+                            console.log("---------!!!!!!!!!Second Request get answer based on link!!!!!!!!!![MINI] --------------");
+                            extractedAnswersSecondRequest = await this.getAnswersByQuestionLinkInMiddleCrawling(questions);
+                            if (extractedAnswersSecondRequest.length > extractedAnswers.length) {
+                                console.log("---------!!!!!!!!!Second Request get answer based on link!!!!!!!!!![MINI] DONE --------------");
+                                extractedAnswers = extractedAnswersSecondRequest;
+                                break;
+                            }
+                        }
+                        break
                     }
                     countMini = countMini + 1;
                     await delay(1000)
@@ -73,7 +84,7 @@ class NytCrwalerService {
 
                 // استخراج لینک و عنوان و نوع سوال
 
-                const questionsAnswersMiniCross = this.extractQuestionsAnswers(responseMiniCross.data, "mini-cross");
+                let questionsAnswersMiniCross = this.extractQuestionsAnswers(responseMiniCross.data, "mini-cross");
                 if (questionsAnswersMiniCross && questionsAnswersMiniCross?.length < 30) {
                     if (extractedAnswers) {
                         questionsAnswersMiniCross = [...extractedAnswers, ...questionsAnswersMiniCross]
@@ -125,24 +136,37 @@ class NytCrwalerService {
                 let responseMaxiCross;
                 let isValidMaxiContent;
                 let extractedAnswers;
+                let extractedAnswersSecondRequest;
+                let countMaxi = 0;
                 let requestNumber = new Array(24).fill(0)
                 for (let request of requestNumber) {
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
                     // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/nyt/maxi.html', 'utf-8')
                     // responseMaxiCross = fs.readFileSync('C:/Users/yaser ahmadi/Desktop/nyt-tem/mini_1.html', 'utf-8')
-                    //fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross)
-                    let { statusContent, questions } = this.isValidContent(responseMaxiCross, 'nyt crossword answers', "maxi-cross")
+                    fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross.data)
+                    let { statusContent, questions } = this.isValidContent(responseMaxiCross.data, 'nyt crossword answers', "maxi-cross")
                     isValidMaxiContent = statusContent;
-                    if (isValidMaxiContent == 1){ // success
-                    console.log(`-----------((((((((((MAXI:${countMaxi})))))))))))))----------`)
-                    break;
-                }
+                    if (isValidMaxiContent == 1) { // success
+                        console.log(`-----------((((((((((MAXI:${countMaxi})))))))))))))----------`)
+                        break;
+                    }
 
 
                     if (isValidMaxiContent == 2) {  // have question link
+                        console.log("---------!!!!!!!!!Find link in [MAXi] --------------");
                         extractedAnswers = await this.getAnswersByQuestionLinkInMiddleCrawling(questions);
-                        if (extractedAnswers.length > 0)
+                        if (extractedAnswers.length == questions.length)
                             break;
+                        else {
+                            console.log("---------!!!!!!!!!Second Request get answer based on link!!!!!!!!!![MAXi] --------------");
+                            extractedAnswersSecondRequest = await this.getAnswersByQuestionLinkInMiddleCrawling(questions);
+                            if (extractedAnswersSecondRequest.length > extractedAnswers.length) {
+                                console.log("---------!!!!!!!!!Second Request get answer based on link!!!!!!!!!![DONE] --------------");
+                                extractedAnswers = extractedAnswersSecondRequest;
+                                break;
+                            }
+                        }
+                        break;
                     }
                     countMaxi = countMaxi + 1;
                     await delay(1000)
@@ -151,7 +175,7 @@ class NytCrwalerService {
                     throw new Error('Content is not valid for [Maxi] in title')
                 }
                 // استخراج لینک و عنوان و نوع سوال
-                const questionsAnswersMaxiCross = this.extractQuestionsAnswers(responseMaxiCross, "maxi-cross");
+                let questionsAnswersMaxiCross = this.extractQuestionsAnswers(responseMaxiCross.data, "maxi-cross");
                 if (questionsAnswersMaxiCross && questionsAnswersMaxiCross?.length > 30) {
                     if (extractedAnswers) {
                         questionsAnswersMaxiCross = [...extractedAnswers, ...questionsAnswersMaxiCross]
@@ -215,7 +239,7 @@ class NytCrwalerService {
             }
             const answer = $(this).text();
             backupAnswer.push(answer);
-            result[index]["answer"] = answer;
+            // result[index]["answer"] = answer;
         });
         let reversedAnswers = backupAnswer.reverse();
         let reversedResult = result.reverse();
@@ -466,10 +490,10 @@ class NytCrwalerService {
                 let answer = await this.getAnswerByUrl(question.link);
                 if (answer) {
                     let obj = {
+                        question: question.question,
                         type: question.type,
-                        answer: answer,
                         category: question.category,
-                        question: question.question
+                        answer: answer,
                     }
                     result.push(obj)
 
