@@ -42,22 +42,30 @@ class NytCrwalerService {
                 // ارسال درخواست به سایت
                 let responseMiniCross;
                 let isValidMiniContent;
+
                 let extractedAnswers;
-                let requestNumber = new Array(12).fill(0);
+                let countMini = 0;
+                let requestNumber = new Array(24).fill(0);
                 for (let request of requestNumber) {
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                     fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
+
                     let { statusContent, questions } = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers');
                     isValidMiniContent = statusContent;
-                    if (isValidMiniContent)
+                    if (isValidMiniContent){
+                        console.log(`-----------((((((((((MINI:${countMini})))))))))))))----------`)
                         break;
+                    }
+                    
                     if (isValidMaxiContent == 2) {  // have question link
                         extractedAnswers = await this.getAnswersByQuestionLinkInMiddleCrawling(questions);
                         if (extractedAnswers.length > 0)
                             break;
                     }
+                    countMini = countMini + 1;
                     await delay(1000)
+
                 }
                 if (!isValidMiniContent) {
                     throw new Error('Content is not valid for [Mini] in title')
@@ -117,7 +125,7 @@ class NytCrwalerService {
                 let responseMaxiCross;
                 let isValidMaxiContent;
                 let extractedAnswers;
-                let requestNumber = new Array(5).fill(0)
+                let requestNumber = new Array(24).fill(0)
                 for (let request of requestNumber) {
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
                     // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/nyt/maxi.html', 'utf-8')
@@ -125,8 +133,10 @@ class NytCrwalerService {
                     //fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross)
                     let { statusContent, questions } = this.isValidContent(responseMaxiCross, 'nyt crossword answers', "maxi-cross")
                     isValidMaxiContent = statusContent;
-                    if (isValidMaxiContent == 1) // success
-                        break;
+                    if (isValidMaxiContent == 1){ // success
+                    console.log(`-----------((((((((((MAXI:${countMaxi})))))))))))))----------`)
+                    break;
+                }
 
 
                     if (isValidMaxiContent == 2) {  // have question link
@@ -134,7 +144,7 @@ class NytCrwalerService {
                         if (extractedAnswers.length > 0)
                             break;
                     }
-
+                    countMaxi = countMaxi + 1;
                     await delay(1000)
                 }
                 if (!isValidMaxiContent) {
