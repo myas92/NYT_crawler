@@ -70,7 +70,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
 const sendDataToProductionForSevenLittlesWords = async (req, res) => {
     date = date ? date : tommarowTehranDate();
     let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
-    let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
+    let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     let category = '7LW'
     let result = await prisma.seven_little_words.findFirst({
         where: {
