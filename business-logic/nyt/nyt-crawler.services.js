@@ -42,15 +42,22 @@ class NytCrwalerService {
                 // ارسال درخواست به سایت
                 let responseMiniCross;
                 let isValidMiniContent;
+                let extractedAnswers;
                 let requestNumber = new Array(12).fill(0);
                 for (let request of requestNumber) {
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                     fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
-                    isValidMiniContent = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers');
+                    let { statusContent, questions } = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers');
+                    isValidMiniContent = statusContent;
                     if (isValidMiniContent)
                         break;
-                    await delay(2000)
+                    if (isValidMaxiContent == 2) {  // have question link
+                        extractedAnswers = await this.getAnswersByQuestionLinkInMiddleCrawling(questions);
+                        if (extractedAnswers.length > 0)
+                            break;
+                    }
+                    await delay(1000)
                 }
                 if (!isValidMiniContent) {
                     throw new Error('Content is not valid for [Mini] in title')
@@ -60,6 +67,9 @@ class NytCrwalerService {
 
                 const questionsAnswersMiniCross = this.extractQuestionsAnswers(responseMiniCross.data, "mini-cross");
                 if (questionsAnswersMiniCross && questionsAnswersMiniCross?.length < 30) {
+                    if (extractedAnswers) {
+                        questionsAnswersMiniCross = [...extractedAnswers, ...questionsAnswersMiniCross]
+                    }
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
                     await prisma.nyt_mini.update({
                         where: { id: requestInfo.id },
@@ -80,6 +90,10 @@ class NytCrwalerService {
             console.log(error)
         }
     }
+
+
+
+    // MAXIIIIIIIIIIIIIIIIIIIIIIIII
     async getAllQuestionAnswersForMaxi() {
         try {
             console.log("Maxi: ", this.date)
@@ -101,23 +115,37 @@ class NytCrwalerService {
             if (requestInfo.questions_answers == null || requestInfo.questions_answers?.length == 0) {
                 // ارسال درخواست به سایت
                 let responseMaxiCross;
-                let isValidMaxiContent
+                let isValidMaxiContent;
+                let extractedAnswers;
                 let requestNumber = new Array(5).fill(0)
                 for (let request of requestNumber) {
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
                     // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/nyt/maxi.html', 'utf-8')
-                    fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross.data)
-                    isValidMaxiContent = this.isValidContent(responseMaxiCross.data, 'nyt crossword answers')
-                    if (isValidMaxiContent)
+                    // responseMaxiCross = fs.readFileSync('C:/Users/yaser ahmadi/Desktop/nyt-tem/mini_1.html', 'utf-8')
+                    //fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross)
+                    let { statusContent, questions } = this.isValidContent(responseMaxiCross, 'nyt crossword answers', "maxi-cross")
+                    isValidMaxiContent = statusContent;
+                    if (isValidMaxiContent == 1) // success
                         break;
-                    await delay(5000)
+
+
+                    if (isValidMaxiContent == 2) {  // have question link
+                        extractedAnswers = await this.getAnswersByQuestionLinkInMiddleCrawling(questions);
+                        if (extractedAnswers.length > 0)
+                            break;
+                    }
+
+                    await delay(1000)
                 }
                 if (!isValidMaxiContent) {
                     throw new Error('Content is not valid for [Maxi] in title')
                 }
                 // استخراج لینک و عنوان و نوع سوال
-                const questionsAnswersMaxiCross = this.extractQuestionsAnswers(responseMaxiCross.data, "maxi-cross");
+                const questionsAnswersMaxiCross = this.extractQuestionsAnswers(responseMaxiCross, "maxi-cross");
                 if (questionsAnswersMaxiCross && questionsAnswersMaxiCross?.length > 30) {
+                    if (extractedAnswers) {
+                        questionsAnswersMaxiCross = [...extractedAnswers, ...questionsAnswersMaxiCross]
+                    }
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
                     await prisma.nyt_maxi.update({
                         where: { id: requestInfo.id },
@@ -131,8 +159,8 @@ class NytCrwalerService {
                 else {
                     throw new Error('Content is not valid for [Maxi] in length')
                 }
-                
-          
+
+
             }
             return { questionsAnswers: requestInfo.questions_answers, message: '' }
         } catch (error) {
@@ -154,49 +182,72 @@ class NytCrwalerService {
             if ($(this).text().toLowerCase().trim() == 'down') {
                 isDown = !isDown;
             }
-            if ($(this).attr('class') == 'tips_block') {
-                const question = $(this).text();
-                let obj = {
-                    question: question,
-                    type: isDown ? 'down' : 'across',
-                    category
+            const link = $(this).find('.tips_block a').attr('href');
+            if (!link && !link?.includes('http')) {
+                if ($(this).attr('class') == 'tips_block') {
+                    const question = $(this).text();
+                    let obj = {
+                        question: question,
+                        type: isDown ? 'down' : 'across',
+                        category
+                    }
+                    result.push(obj)
                 }
-                result.push(obj)
             }
 
+
         });
+        let backupAnswer = []
         $('.entry-content > ul').each(function (index, item) {
             isAnswer = true;
             if ($(this).text().toLowerCase().trim() == 'down') {
                 isDown = !isDown;
             }
             const answer = $(this).text();
-            result[index]["answer"] = answer
+            backupAnswer.push(answer);
+            result[index]["answer"] = answer;
         });
+        let reversedAnswers = backupAnswer.reverse();
+        let reversedResult = result.reverse();
+        reversedResult.forEach((answer, index) => {
+            reversedResult[index]['answer'] = reversedAnswers[index];
+        })
+        result = reversedResult.reverse()
         return isAnswer ? result : null;
     }
 
-    isValidContent(html, title) {
-        let isValid = false;
+
+    // Check is valid content 
+    isValidContent(html, title, category) {
+        let statusContent = 0;
+        let isDown = false;
         let questions = [];
         let $ = cheerio.load(html);
         let content = $('.entry-content > p:nth-child(7) > a').text().toLowerCase();
         $('.entry-content > div').each(function () {
+            if ($(this).text().toLowerCase().trim() == 'down') {
+                isDown = !isDown;
+            }
             const link = $(this).find('.tips_block a').attr('href');
+            const text = $(this).find('.tips_block a').text();
             if (link && link.includes('http')) {
                 let obj = {
+                    type: isDown ? 'down' : 'across',
                     link: link,
+                    question: text,
+                    category: category
                 }
                 questions.push(obj)
             }
         });
         if (title == content && questions.length == 0) {
-            isValid = true
+            statusContent = 1
         }
-        if (questions.length > 0) {
+        if (title == content && questions.length > 0) {
+            statusContent = 2
             console.log("^^^^^^^^^^^^^^^^^   I found Question link :( ^^^^^^^^^^^^^^^^^^^^")
         }
-        return isValid
+        return { statusContent, questions }
     }
 
     // ---------------------------------------------------------------------------------------------------------
@@ -395,6 +446,35 @@ class NytCrwalerService {
         return answer;
     }
 
+
+    async getAnswersByQuestionLinkInMiddleCrawling(questions) {
+        const defer = q.defer();
+
+        let result = [];
+        async.eachSeries(questions, async (question) => {
+            try {
+                let answer = await this.getAnswerByUrl(question.link);
+                if (answer) {
+                    let obj = {
+                        type: question.type,
+                        answer: answer,
+                        category: question.category,
+                        question: question.question
+                    }
+                    result.push(obj)
+
+                }
+            } catch (error) {
+                console.log("--------------- ERROR in getAllAnswersFromQuestionLinks Start-------------------")
+                console.log("getAllContentLink----> ", error)
+                console.log("item", question)
+                console.log("----------------------------------Error End-------------------------------------")
+            }
+        }, async () => {
+            defer.resolve(result)
+        })
+        return defer.promise;
+    }
 }
 
 module.exports = NytCrwalerService;
