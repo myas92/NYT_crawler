@@ -51,7 +51,7 @@ class NytCrwalerService {
                     fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
                     // responseMiniCross = fs.readFileSync('C:/Users/yaser ahmadi/Desktop/nyt-tem/mini_1.html', 'utf-8')
-                    let { statusContent, questions } = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers');
+                    let { statusContent, questions } = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers', 'mini-cross');
                     isValidMiniContent = statusContent;
                     if (isValidMiniContent == 1) {
                         console.log(`-----------((((((((((MINI:${countMini})))))))))))))----------`)
