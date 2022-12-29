@@ -41,9 +41,9 @@ const crawlSevenLittleWords = async () => {
 
 const getQuestionsAnswerAPI = async (req, res, next) => {
     try {
-        console.log(`*** GET: Seven-letter-words: ${tommarowTehranDate()} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
+        console.log(`*** GET: Seven-letter-words: ${currentTehranDate()} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
         let { date } = req.query;
-        date = date ? date : tommarowTehranDate();
+        date = date ? date : currentTehranDate();
         let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
         let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
         let category = '7LW'
