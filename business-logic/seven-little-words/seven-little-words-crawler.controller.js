@@ -24,7 +24,7 @@ const crawlSevenLittleWords = async () => {
     try {
         let questionsAnswers;
         console.log('---------------------- Crawler started for ** Seven Little Words ** API --------------------')
-        date = tommarowTehranDate();
+        date = currentTehranDate();
         let sevenLittleWords = new SevenLittleWordsCrwalerService(date);
         questionsAnswers = await sevenLittleWords.getQuestionAnswer()
         await sendDataToProductionForSevenLittlesWords()
@@ -68,7 +68,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
 
 
 const sendDataToProductionForSevenLittlesWords = async (req, res) => {
-    date = date ? date : tommarowTehranDate();
+    date = date ? date : currentTehranDate();
     let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     let category = '7LW'
