@@ -14,3 +14,15 @@ let dailyThemeMaxiJob = new CronJob(
     true,
     'Asia/Tehran'
 );
+
+let dailyThemeMiniJob = new CronJob(
+    '10 0 0 * * sat,sun,mon,tue,wed,thu,fri',
+    async function () {
+        console.log('Daily Theme Maxi:--->', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
+
+        await dailyThemeController.crawlDailyThemeMini()
+    },
+    null,
+    true,
+    'Asia/Tehran'
+);
