@@ -30,7 +30,7 @@ const crawlDailyThemeMaxi = async () => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMaxi();
-        await sendDataDailyThemeToProductionForMaxi()
+        // await sendDataDailyThemeToProductionForMaxi()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Maxi **  API--------------------')
         return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
     } catch (error) {
@@ -64,7 +64,7 @@ const crawlDailyThemeMini = async () => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMini();
-        await sendDataDailyThemeToProductionForMini()
+        // await sendDataDailyThemeToProductionForMini()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Mini **  API--------------------')
         return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
     } catch (error) {
