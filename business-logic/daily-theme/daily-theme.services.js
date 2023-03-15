@@ -62,6 +62,51 @@ class DailyThemeCrwalerService {
             console.log(error)
         }
     }
+    
+    async getQuestionAnswerForMini() {
+        try {
+            let date = moment(this.date, 'M-D-YY').format('D-MMMM-YYYY')
+            console.log("Daily Theme: ", this.date)
+            console.log(`https://dailythemedcrossword.info/mini-${date}-crossword/`)
+
+            const url = `https://dailythemedcrossword.info/mini-${date}-crossword/`;
+            // // درج اطلاعات اولیه درخواست 
+            let requestInfo = await prisma.daily_theme_mini.upsert({
+                where: { date: this.date },
+                update: {},
+                create: {
+                    qa_id: randomBytes(5).toString('hex'),
+                    date: this.date,
+                    url: url,
+                    status: statusService.START
+                }
+            });
+            // // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
+            if (requestInfo.questions_answers == null || requestInfo.questions_answers?.length == 0) {
+            //     // ارسال درخواست به سایت
+                let response = await axios({ method: 'get', url: url, headers: {}, timeout: 2 * 60 * 1000 });
+                // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
+                // استخراج لینک و عنوان و نوع سوال
+
+                const questionsAnswers = this.extractQuestionsAnswers(response.data, "mini-cross");
+                if (questionsAnswers) {
+                    // درج اطلاعات در دیتابیس که شامل سوالات هست
+                    await prisma.daily_theme_mini.update({
+                        where: { id: requestInfo.id },
+                        data: {
+                            questions_answers: questionsAnswers,
+                            status: statusService.FINISH
+                        },
+                    });
+
+                }
+                return questionsAnswers
+            }
+            return requestInfo.questions_answers
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     /**
  * 
@@ -77,12 +122,13 @@ class DailyThemeCrwalerService {
             const regex = /\d*(a|d)\.\s(.*)\:$/gm;
             let processedText = regex.exec(question);
             let type = processedText[1]=='d' ? 'down' : 'across'
- 
+            let answer = $(this).next().find('.le').text();
+            let questionFinal = processedText[2].replaceAll("\"",'')
             let obj = {
                 type: type,
-                answer: $(this).next().text(),
+                answer: answer,
                 category: category,
-                question: processedText[2]
+                question: questionFinal
             }
             if(obj.type=='down'){
                 down.push(obj)
