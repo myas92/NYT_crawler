@@ -6,12 +6,15 @@ const app = express();
 const nytRouters = require("./business-logic/nyt/nyt.routes");
 const HttpError = require('./utils/http-error');
 const SevenLittleWordsRouter = require("./business-logic/seven-little-words/seven-little-words-crawler.routes");
+const dailyThemeRouter = require("./business-logic/daily-theme/daily-theme.routes");
 require('./cronjob/nyt-mini');
 require('./cronjob/nyt-maxi');
 require('./cronjob/seven-little-words');
+require('./cronjob/daily-theme');
 
 app.use("/nyt", nytRouters);
 app.use("/seven-little-words", SevenLittleWordsRouter);
+app.use("/daily-theme", dailyThemeRouter);
 
 
 app.use((req, res, next) => {
