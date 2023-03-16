@@ -24,7 +24,7 @@ const crawlDailyThemeMaxiAPI = async (req, res, next) => {
 }
 const crawlDailyThemeMaxi = async () => {
     try {
-        let { date } = req.query
+        let date = currentTehranDate();
         let questionsAnswers;
         console.log('---------------------- Crawler started for ** Daily-Theme-Maxi ** API --------------------')
         date = date ? date : currentTehranDate();
@@ -57,7 +57,7 @@ const crawlDailyThemeMiniAPI = async (req, res, next) => {
 }
 const crawlDailyThemeMini = async () => {
     try {
-        let { date } = req.query
+        let date = currentTehranDate();
         let questionsAnswers;
         console.log('---------------------- Crawler started for ** Daily-Theme-Mini ** API --------------------')
         date = date ? date : currentTehranDate();
