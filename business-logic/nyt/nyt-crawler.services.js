@@ -292,16 +292,16 @@ class NytCrwalerService {
             console.log(this.date)
             console.log(`https://nytminicrossword.com/nyt-mini-crossword/${this.date}`)
 
-            const urlMiniCross = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
-            // const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
+            // const urlMiniCross = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
+            const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
             // درج اطلاعات اولیه درخواست 
             let requestInfo = await prisma.nyt.upsert({
                 where: { date: this.date },
                 update: {},
                 create: {
                     date: this.date,
-                    url_mini_cross: urlMiniCross,
-                    // url_maxi_cross: urlMaxiCross,
+                    // url_mini_cross: urlMiniCross,
+                    url_maxi_cross: urlMaxiCross,
                     status: statusService.START
                 }
             });
@@ -319,20 +319,20 @@ class NytCrwalerService {
             // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
             // if (requestInfo.questions == null || requestInfo.questions?.length == 0) {
             // ارسال درخواست به سایت
-            const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
-            // const responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
+            // const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
+            const responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
             // استخراج لینک و عنوان و نوع سوال
-            const questionsMiniCross = this.extractQuestionLinks(responseMiniCross.data, "mini-cross");
-            // const questionsMaxiCross = this.extractQuestionLinks(responseMaxiCross.data, "maxi-cross");
+            // const questionsMiniCross = this.extractQuestionLinks(responseMiniCross.data, "mini-cross");
+            const questionsMaxiCross = this.extractQuestionLinks(responseMaxiCross.data, "maxi-cross");
             // let questions = [...questionsMiniCross, ...questionsMaxiCross]
             // درج اطلاعات در دیتابیس که شامل سوالات هست
             await prisma.nyt.update({
                 where: { id: requestInfo.id },
                 data: {
-                    questions: questionsMiniCross
+                    questions: questionsMaxiCross
                 },
             });
-            return { id: requestInfo.id, date: this.date, questions: questionsMiniCross, url: urlMiniCross }
+            return { id: requestInfo.id, date: this.date, questions: questionsMaxiCross, url: urlMaxiCross }
             // }
 
         } catch (error) {
