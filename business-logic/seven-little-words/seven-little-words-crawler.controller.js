@@ -140,6 +140,8 @@ const sendDataToProductionForSevenLittlesWords = async (req, res) => {
     }
 }
 
+
+
 exports.crawlSevenLittleWordsAPI = crawlSevenLittleWordsAPI
 exports.crawlSevenLittleWords = crawlSevenLittleWords
 exports.getQuestionsAnswerAPI = getQuestionsAnswerAPI
