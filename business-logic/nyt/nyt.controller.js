@@ -81,7 +81,7 @@ const crawlQuestionsAnswersBasedLinksAPI = async (req, res, next) => {
             let requestInfo = await prisma.nyt.findFirst({
                 where: { id: id },
             })
-            answers = await nyt.getAllAnswersFromQuestionLinks(id, date, questions, url)
+            answers = await nyt.getAllAnswersFromQuestionLinksOfMaxi(id, date, questions, url)
         }
         if (!answers) {
             return res.status(201).json({ message: "Try again later", result: [] })
@@ -161,7 +161,7 @@ const crawlQuestionsAnswers = async (inputDate = currentTehranDate()) => {
         console.log('---------------------- Crawler started for NYT --------------------')
         date = inputDate;
         let nyt = new NytCrwaler(date);
-        let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePage()
+        let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePageForMaxi()
         if (questionlinksInfo) {
             let { id, date, questions, questions_answers } = questionlinksInfo
             if (!questions_answers) {
@@ -169,7 +169,7 @@ const crawlQuestionsAnswers = async (inputDate = currentTehranDate()) => {
                     where: { id: id },
                 })
                 if (requestInfo.status != statusService.RUNNING) {
-                    answers = await nyt.getAllAnswersFromQuestionLinks(id, date, questions)
+                    answers = await nyt.getAllAnswersFromQuestionLinksOfMaxi(id, date, questions)
                 }
             }
             else {

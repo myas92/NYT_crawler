@@ -47,6 +47,7 @@ class NytCrwalerService {
                 let countMini = 0;
                 let requestNumber = new Array(35).fill(0);
                 for (let request of requestNumber) {
+                    console.log('Mini-NumberRequest:--->', request);
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                     fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
@@ -140,10 +141,11 @@ class NytCrwalerService {
                 let countMaxi = 0;
                 let requestNumber = new Array(24).fill(0)
                 for (let request of requestNumber) {
+                    console.log('Mini-NumberRequest:--->', request);
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
                     // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/nyt/maxi.html', 'utf-8')
                     // responseMaxiCross = fs.readFileSync('C:/Users/yaser ahmadi/Desktop/nyt-tem/mini_1.html', 'utf-8')
-                    // fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross.data)
+                    fs.writeFileSync(`./body/maxi_${+new Date()}.html`, responseMaxiCross.data)
                     let { statusContent, questions } = this.isValidContent(responseMaxiCross.data, 'nyt crossword answers', "maxi-cross")
                     isValidMaxiContent = statusContent;
                     if (isValidMaxiContent == 1) { // success
@@ -292,6 +294,62 @@ class NytCrwalerService {
             console.log(this.date)
             console.log(`https://nytminicrossword.com/nyt-mini-crossword/${this.date}`)
 
+            const urlMiniCross = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
+            // const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
+            // درج اطلاعات اولیه درخواست 
+            let requestInfo = await prisma.nyt.upsert({
+                where: { date: this.date },
+                update: {},
+                create: {
+                    date: this.date,
+                    url_mini_cross: urlMiniCross,
+                    // url_maxi_cross: urlMaxiCross,
+                    status: statusService.START
+                }
+            });
+            let updateDate = moment(requestInfo.updatedAt).add(5, 'm').format('YYYY-MM-DD HH:mm:ss');
+            let currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
+            if (updateDate < currentDate) {
+                await prisma.nyt.update({
+                    where: { id: requestInfo.id },
+                    data: {
+                        status: statusService.START,
+                        updatedAt: new Date()
+                    }
+                });
+            }
+            // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
+            // if (requestInfo.questions == null || requestInfo.questions?.length == 0) {
+            // ارسال درخواست به سایت
+            const responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
+            // const responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
+            // استخراج لینک و عنوان و نوع سوال
+            const questionsMiniCross = this.extractQuestionLinks(responseMiniCross.data, "mini-cross");
+            // const questionsMaxiCross = this.extractQuestionLinks(responseMaxiCross.data, "maxi-cross");
+            // let questions = [...questionsMiniCross, ...questionsMaxiCross]
+            // درج اطلاعات در دیتابیس که شامل سوالات هست
+            await prisma.nyt.update({
+                where: { id: requestInfo.id },
+                data: {
+                    questions: questionsMaxiCross
+                },
+            });
+            return { id: requestInfo.id, date: this.date, questions: questionsMiniCross, url: urlMiniCross }
+            // }
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    
+
+
+    
+    async getAllQuestionLinksFromHomePageForMaxi() {
+        try {
+            console.log(this.date)
+            console.log(`https://nytminicrossword.com/nyt-mini-crossword/${this.date}`)
+
             // const urlMiniCross = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
             const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
             // درج اطلاعات اولیه درخواست 
@@ -428,6 +486,73 @@ class NytCrwalerService {
                     status: statusService.FINISH
                 },
             });
+            defer.resolve(result)
+        })
+        return defer.promise;
+    }
+
+    
+    /**
+     *  دریافت جواب ها از همه لینک های سوالهای مکسی
+     * @param {*} id 
+     * @param {*} questions 
+     * @returns 
+     */
+     async getAllAnswersFromQuestionLinksOfMaxi(id, date, questions, url) {
+        const defer = q.defer();
+        let answers = [];
+        await prisma.nyt.update({
+            where: { id: id },
+            data: {
+                status: statusService.RUNNING
+            }
+        })
+        let result = [];
+        async.eachSeries(questions, async (question) => {
+            try {
+                let answer = await this.getAnswerByUrl(question.link);
+                if (answer) {
+                    let obj = {
+                        type: question.type,
+                        answer: answer,
+                        category: question.category,
+                        question: question.question
+                    }
+                    result.push(obj)
+
+                }
+            } catch (error) {
+                question["answer"] = '';
+                answers.push(question)
+                await prisma.answers_error.create({
+                    data: {
+                        date: date,
+                        url: question.link,
+                        error: error.message,
+
+                    }
+                })
+                console.log("--------------- ERROR in getAllAnswersFromQuestionLinks Start-------------------")
+                console.log("getAllContentLink----> ", error)
+                console.log("item", question)
+                console.log("----------------------------------Error End-------------------------------------")
+            }
+        }, async () => {
+            await prisma.nyt_maxi.upsert({
+                where: {
+                    date: date
+                },
+                update: {
+                    questions_answers: result,
+                },
+                create: {
+                    date: date,
+                    url_maxi_cross: url,
+                    questions_answers: result,
+                    status: statusService.FINISH
+                },
+            });
+            console.log("--------------Finish---------MAxi-Manually-------------------");
             defer.resolve(result)
         })
         return defer.promise;
