@@ -26,12 +26,12 @@ const crawlDailyThemeMaxi = async () => {
     try {
         let date = currentTehranDate();
         let questionsAnswers;
-        console.log('---------------------- Crawler started for ** Daily-Theme-Maxi ** API --------------------')
+        console.log('---------------------- Crawler started for ** Daily-Theme-Maxi ** Cron --------------------')
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMaxi();
         // await sendDataDailyThemeToProductionForMaxi()
-        console.log('---------------------- Crawler ended for ** Daily-Theme-Maxi **  API--------------------')
+        console.log('---------------------- Crawler ended for ** Daily-Theme-Maxi **  Cron--------------------')
     } catch (error) {
         console.log(error)
     }
@@ -59,12 +59,12 @@ const crawlDailyThemeMini = async () => {
     try {
         let date = currentTehranDate();
         let questionsAnswers;
-        console.log('---------------------- Crawler started for ** Daily-Theme-Mini ** API --------------------')
+        console.log('---------------------- Crawler started for ** Daily-Theme-Mini ** Cron --------------------')
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMini();
         // await sendDataDailyThemeToProductionForMini()
-        console.log('---------------------- Crawler ended for ** Daily-Theme-Mini **  API--------------------')
+        console.log('---------------------- Crawler ended for ** Daily-Theme-Mini **  Cron--------------------')
     } catch (error) {
         console.log(error)
     }

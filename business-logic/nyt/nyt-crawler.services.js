@@ -45,10 +45,10 @@ class NytCrwalerService {
                 let extractedAnswersSecondRequest;
                 let extractedAnswers;
                 let countMini = 0;
-                let requestNumber = new Array(24).fill(0);
+                let requestNumber = new Array(35).fill(0);
                 for (let request of requestNumber) {
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
-                    // fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
+                    fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
                     // responseMiniCross = fs.readFileSync('C:/Users/yaser ahmadi/Desktop/nyt-tem/mini_1.html', 'utf-8')
                     let { statusContent, questions } = this.isValidContent(responseMiniCross.data, 'nyt mini crossword answers', 'mini-cross');
