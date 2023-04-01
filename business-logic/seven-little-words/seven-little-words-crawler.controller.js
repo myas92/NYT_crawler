@@ -100,6 +100,7 @@ const sendDataToProductionForSevenLittlesWords = async (req, res) => {
 
             const response = await axios(config);
             console.log("Send Data to Wordpress Success [--Seven Little Words--]:\n", response.data)
+
             await prisma.response_info.create({
                 data: {
                     qa_id: result.qa_id,
@@ -108,6 +109,16 @@ const sendDataToProductionForSevenLittlesWords = async (req, res) => {
                     response: response.data?.message,
                 }
             })
+
+            // AWS Request
+            try {
+                config.url = process.env.SPEEADREADINGS_URL_7LW_AWS
+                const response_aws = await axios(config);
+                console.log('______________AWS response_7LW___________________');
+                console.log(response_aws.data);
+            } catch (error) {
+                console.log("______________________________AWS_________________________", error);
+            }
 
         } catch (error) {
             console.log("Send Data to Wordpress Error [--Seven Little Words--]:\n", error)

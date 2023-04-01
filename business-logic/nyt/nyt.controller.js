@@ -22,7 +22,7 @@ const crawlMainQuestionAnswersAPI = async (req, res, next) => {
             }
         }
         if (type == "maxi") {
-            const { questionsAnswers, message }  = await nyt.getAllQuestionAnswersForMaxi();
+            const { questionsAnswers, message } = await nyt.getAllQuestionAnswersForMaxi();
             if (message == 'done') {
                 await sendDataToProductionForMaxi()
             }
@@ -54,7 +54,7 @@ const crawlMainQuestionAnswersForMaxi = async () => {
         console.log('---------------------- Started: Maxi NYT --------------------')
         date = currentTehranDate();
         let nyt = new NytCrwaler(date);
-        const { questionsAnswers, message }= await nyt.getAllQuestionAnswersForMaxi();
+        const { questionsAnswers, message } = await nyt.getAllQuestionAnswersForMaxi();
         if (message == 'done') {
             console.log(" ************** Got maxi---> Send Data to WP ************** ")
             await sendDataToProductionForMaxi()
@@ -281,6 +281,16 @@ const sendDataToProductionForMini = async (req, res) => {
                 }
             })
 
+            // AWS Request
+            try {
+                config.url = process.env.SPEEADREADINGS_URL_AWS
+                const response_aws = await axios(config);
+                console.log('______________AWS response_MINI___________________');
+                console.log(response_aws.data);
+            } catch (error) {
+                console.log("______________________________AWS_________________________", error);
+            }
+
         } catch (error) {
             console.log("Send Data to Wordpress [--Mini--]:\n", error)
             await prisma.response_info.create({
@@ -303,7 +313,7 @@ const sendDataToProductionForMini = async (req, res) => {
 const sendDataToProductionForMaxi = async (req, res) => {
     const date = currentTehranDate();
     let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
-    let fullDateFormat = moment().utc().subtract(5,'minutes').format('YYYY-MM-DD HH:mm:ss'); // -5 minutes for maxi
+    let fullDateFormat = moment().utc().subtract(5, 'minutes').format('YYYY-MM-DD HH:mm:ss'); // -5 minutes for maxi
     const category = 'NYT-Maxi';
     let resultMaxi = await prisma.nyt_maxi.findFirst({
         where: {
@@ -341,6 +351,15 @@ const sendDataToProductionForMaxi = async (req, res) => {
                     response: response.data?.message,
                 }
             })
+            // AWS Request
+            try {
+                config.url = process.env.SPEEADREADINGS_URL_MAXI_AWS
+                const response_aws = await axios(config);
+                console.log('______________AWS response___________________');
+                console.log(response_aws);
+            } catch (error) {
+                console.log("______________________________AWS_________________________", error);
+            }
 
         } catch (error) {
             console.log("Send Data to Wordpress [--Maxi--]:\n", error)
