@@ -258,8 +258,18 @@ class NytCrwalerService {
         let statusContent = 0;
         let isDown = false;
         let questions = [];
+        let contents=[]
         let $ = cheerio.load(html);
-        let content = $('.entry-content > p:nth-child(8) > a').text().toLowerCase();
+        let content = $('.entry-content > p:nth-child(6) > a').text().toLowerCase();
+        contents.push(content)
+        let content1 = $('.entry-content > p:nth-child(7) > a').text().toLowerCase();
+        contents.push(content1)
+        let content2 = $('.entry-content > p:nth-child(8) > a').text().toLowerCase();
+        contents.push(content2)
+        let content3 = $('.entry-content > p:nth-child(9) > a').text().toLowerCase();
+         contents.push(content3)
+        let content4 = $('.entry-content > p:nth-child(10) > a').text().toLowerCase();
+         contents.push(content4)
         $('.entry-content > div').each(function () {
             if ($(this).text().toLowerCase().trim() == 'down') {
                 isDown = !isDown;
@@ -276,10 +286,10 @@ class NytCrwalerService {
                 questions.push(obj)
             }
         });
-        if (title == content && questions.length == 0) {
+        if (contents.includes(title) && questions.length == 0) {
             statusContent = 1
         }
-        if (title == content && questions.length > 0) {
+        if (contents.includes(title) && questions.length > 0) {
             statusContent = 2
             console.log(`^^^^^^^^^^^^^^^^^   I found Question link[${title}] :( ^^^^^^^^^^^^^^^^^^^^`)
         }
