@@ -46,8 +46,8 @@ class NytCrwalerService {
                 let extractedAnswers;
                 let countMini = 0;
                 let requestNumber = new Array(35).fill(0);
-                for (let request of requestNumber) {
-                    console.log('Mini-NumberRequest:--->', request);
+                for (let [index, request] of requestNumber.entries()) {
+                    console.log('Mini-NumberRequest:--->', index);
                     responseMiniCross = await axios({ method: 'get', url: urlMiniCross, headers: {} });
                     fs.writeFileSync(`./body/mini_${+new Date()}.html`, responseMiniCross.data)
                     // responseMiniCross = fs.readFileSync('/home/yaser/Desktop/new-times/mini/mini.html','utf-8')
@@ -139,9 +139,9 @@ class NytCrwalerService {
                 let extractedAnswers;
                 let extractedAnswersSecondRequest;
                 let countMaxi = 0;
-                let requestNumber = new Array(24).fill(0)
-                for (let request of requestNumber) {
-                    console.log('Mini-NumberRequest:--->', request);
+                let requestNumber = new Array(30).fill(0)
+                for (let [index, request] of requestNumber.entries()) {
+                    console.log('Maxi-NumberRequest:--->', index);
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });
                     // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/nyt/maxi.html', 'utf-8')
                     // responseMaxiCross = fs.readFileSync('C:/Users/yaser ahmadi/Desktop/nyt-tem/mini_1.html', 'utf-8')
@@ -259,7 +259,7 @@ class NytCrwalerService {
         let isDown = false;
         let questions = [];
         let $ = cheerio.load(html);
-        let content = $('.entry-content > p:nth-child(7) > a').text().toLowerCase();
+        let content = $('.entry-content > p:nth-child(8) > a').text().toLowerCase();
         $('.entry-content > div').each(function () {
             if ($(this).text().toLowerCase().trim() == 'down') {
                 isDown = !isDown;
@@ -281,7 +281,7 @@ class NytCrwalerService {
         }
         if (title == content && questions.length > 0) {
             statusContent = 2
-            console.log("^^^^^^^^^^^^^^^^^   I found Question link :( ^^^^^^^^^^^^^^^^^^^^")
+            console.log(`^^^^^^^^^^^^^^^^^   I found Question link[${title}] :( ^^^^^^^^^^^^^^^^^^^^`)
         }
         return { statusContent, questions }
     }
@@ -331,7 +331,7 @@ class NytCrwalerService {
             await prisma.nyt.update({
                 where: { id: requestInfo.id },
                 data: {
-                    questions: questionsMaxiCross
+                    questions: questionsMiniCross
                 },
             });
             return { id: requestInfo.id, date: this.date, questions: questionsMiniCross, url: urlMiniCross }
