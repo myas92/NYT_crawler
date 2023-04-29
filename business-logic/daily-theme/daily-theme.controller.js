@@ -15,7 +15,7 @@ const crawlDailyThemeMaxiAPI = async (req, res, next) => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMaxi();
-        // await sendDataDailyThemeToProductionForMaxi()
+        await sendDataDailyThemeToProductionForMaxi()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Maxi **  API--------------------')
         return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
     } catch (error) {
@@ -30,7 +30,7 @@ const crawlDailyThemeMaxi = async () => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMaxi();
-        // await sendDataDailyThemeToProductionForMaxi()
+        await sendDataDailyThemeToProductionForMaxi()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Maxi **  Cron--------------------')
     } catch (error) {
         console.log(error)
@@ -48,7 +48,7 @@ const crawlDailyThemeMiniAPI = async (req, res, next) => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMini();
-        // await sendDataDailyThemeToProductionForMini()
+        await sendDataDailyThemeToProductionForMini()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Mini **  API--------------------')
         return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
     } catch (error) {
@@ -63,7 +63,7 @@ const crawlDailyThemeMini = async () => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMini();
-        // await sendDataDailyThemeToProductionForMini()
+        await sendDataDailyThemeToProductionForMini()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Mini **  Cron--------------------')
     } catch (error) {
         console.log(error)
@@ -105,7 +105,7 @@ const sendDataDailyThemeToProductionForMaxi = async (req, res) => {
     const date = currentTehranDate();
     let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().subtract(5,'minutes').format('YYYY-MM-DD HH:mm:ss'); // -5 minutes for maxi
-    const category = 'Daily-Theme-Maxi';
+    const category = 'daily-theme-maxi';
     let resultMaxi = await prisma.daily_theme_maxi.findFirst({
         where: {
             date: date
@@ -122,7 +122,7 @@ const sendDataDailyThemeToProductionForMaxi = async (req, res) => {
         });
         const config = {
             method: 'post',
-            url: process.env.SPEEADREADINGS_URL_MAXI,
+            url: process.env.SPEEADREADINGS_URL_DAILY_THEME_MAXI,
             headers: {
                 'Game-name': category,
                 'Authorization': process.env.SPEEADREADINGS_PASSWORD,
@@ -165,7 +165,7 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
     const date = currentTehranDate();
     let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().subtract(5,'minutes').format('YYYY-MM-DD HH:mm:ss'); // -5 minutes for maxi
-    const category = 'Daily-Theme-Maxi';
+    const category = 'daily-theme-mini';
     let resultMaxi = await prisma.daily_theme_mini.findFirst({
         where: {
             date: date
@@ -182,7 +182,7 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
         });
         const config = {
             method: 'post',
-            url: process.env.SPEEADREADINGS_URL_Mini,
+            url: process.env.SPEEADREADINGS_URL_DAILY_THEME_MINI,
             headers: {
                 'Game-name': category,
                 'Authorization': process.env.SPEEADREADINGS_PASSWORD,
