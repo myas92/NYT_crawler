@@ -10,6 +10,7 @@ const fs = require('fs');
 const { del } = require('q');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 const { randomBytes } = require('crypto');
+const { isUpperCase } = require('../../utils/helper');
 class NytCrwalerService {
     constructor(inputDate) {
         this.date = inputDate
@@ -100,6 +101,17 @@ class NytCrwalerService {
                     });
                     return { questionsAnswers: questionsAnswersMiniCross, message: 'done' }
 
+                }
+                else if (extractedAnswers?.length > 8) {
+                    // درج اطلاعات در دیتابیس که شامل سوالات هست
+                    await prisma.nyt_mini.update({
+                        where: { id: requestInfo.id },
+                        data: {
+                            questions_answers: extractedAnswers,
+                            status: statusService.FINISH
+                        },
+                    });
+                    return { questionsAnswers: extractedAnswers, message: 'done' }
                 }
                 else {
                     throw new Error('Content is not valid for [Mini] in length')
@@ -192,6 +204,17 @@ class NytCrwalerService {
                     });
                     return { questionsAnswers: questionsAnswersMaxiCross, message: 'done' }
                 }
+                else if (extractedAnswers?.length > 50) {
+                    // درج اطلاعات در دیتابیس که شامل سوالات هست
+                    await prisma.nyt_mini.update({
+                        where: { id: requestInfo.id },
+                        data: {
+                            questions_answers: extractedAnswers,
+                            status: statusService.FINISH
+                        },
+                    });
+                    return { questionsAnswers: extractedAnswers, message: 'done' }
+                }
                 else {
                     throw new Error('Content is not valid for [Maxi] in length')
                 }
@@ -258,18 +281,15 @@ class NytCrwalerService {
         let statusContent = 0;
         let isDown = false;
         let questions = [];
-        let contents=[]
+        let contents = []
         let $ = cheerio.load(html);
-        let content = $('.entry-content > p:nth-child(6) > a').text().toLowerCase();
-        contents.push(content)
-        let content1 = $('.entry-content > p:nth-child(7) > a').text().toLowerCase();
-        contents.push(content1)
-        let content2 = $('.entry-content > p:nth-child(8) > a').text().toLowerCase();
-        contents.push(content2)
-        let content3 = $('.entry-content > p:nth-child(9) > a').text().toLowerCase();
-         contents.push(content3)
-        let content4 = $('.entry-content > p:nth-child(10) > a').text().toLowerCase();
-         contents.push(content4)
+        $('.entry-content > p').each(() => {
+
+        })
+        for (let i = 0; i < 30; i++) {
+            let content = $(`.entry-content > p:nth-child(${i}) > a`).text().toLowerCase();
+            contents.push(content)
+        }
         $('.entry-content > div').each(function () {
             if ($(this).text().toLowerCase().trim() == 'down') {
                 isDown = !isDown;
@@ -351,14 +371,14 @@ class NytCrwalerService {
             console.log(error)
         }
     }
-    
 
 
-    
+
+
     async getAllQuestionLinksFromHomePageForMaxi() {
         try {
             console.log(this.date)
-            console.log(`https://nytminicrossword.com/nyt-mini-crossword/${this.date}`)
+            console.log(`https://nytminicrossword.com/nyt-crossword/${this.date}`)
 
             // const urlMiniCross = `https://nytminicrossword.com/nyt-mini-crossword/${this.date}`;
             const urlMaxiCross = `https://nytminicrossword.com/nyt-crossword/${this.date}`;
@@ -501,14 +521,14 @@ class NytCrwalerService {
         return defer.promise;
     }
 
-    
+
     /**
      *  دریافت جواب ها از همه لینک های سوالهای مکسی
      * @param {*} id 
      * @param {*} questions 
      * @returns 
      */
-     async getAllAnswersFromQuestionLinksOfMaxi(id, date, questions, url) {
+    async getAllAnswersFromQuestionLinksOfMaxi(id, date, questions, url) {
         const defer = q.defer();
         let answers = [];
         await prisma.nyt.update({
@@ -609,9 +629,18 @@ class NytCrwalerService {
             headers: {},
             timeout: 10000
         };
-        const response = await axios(config)
+        const response = await axios(config);
+        let answer = ''
         const $ = cheerio.load(response.data);
-        const answer = $('div > ul > li').text()
+        $('div > ul> li ').each(function () {
+            let currentAnswer = $(this).text()
+            if (currentAnswer && currentAnswer !== '') {
+                if (isUpperCase(currentAnswer)) {
+                    answer = $(this).text()
+                }
+            }
+
+        })
         return answer;
     }
 
@@ -644,6 +673,8 @@ class NytCrwalerService {
         })
         return defer.promise;
     }
+
+
 }
 
 module.exports = NytCrwalerService;

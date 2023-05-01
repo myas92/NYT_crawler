@@ -68,14 +68,15 @@ const crawlMainQuestionAnswersForMaxi = async () => {
 // --------------------------------------------------------------------------------
 // Extract Question and answers based on links
 
-const crawlQuestionsAnswersBasedLinksAPI = async (req, res, next) => {
+const crawlQuestionsAnswersMaxiManually= async (req, res, next) => {
     try {
+        console.log('---------------------- Crawler started for NYT MAxi (Mokhayaran)--------------------')
         let { date, type } = req?.query;
         let answers;
         date = date ? date : currentTehranDate();
-        type = type ? type : 'mini';
+        type = type ? type : 'maxi';
         let nyt = new NytCrwaler(date);
-        let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePage()
+        let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePageForMaxi()
         if (questionlinksInfo) {
             let { id, date, questions, url } = questionlinksInfo;
             let requestInfo = await prisma.nyt.findFirst({
@@ -86,6 +87,7 @@ const crawlQuestionsAnswersBasedLinksAPI = async (req, res, next) => {
         if (!answers) {
             return res.status(201).json({ message: "Try again later", result: [] })
         }
+        console.log('---------------------- Crawler Ended for NYT Maxi (Mokhayaran)--------------------')
         return res.status(200).json({ message: "Request done successfully", result: answers })
     } catch (error) {
         console.log(error)
@@ -96,95 +98,36 @@ const crawlQuestionsAnswersBasedLinksAPI = async (req, res, next) => {
         return next(errors);
     }
 };
-const getQuestionsAnswerAPI = async (req, res, next) => {
-    try {
-        console.log(`*** GET: getQuestionsAnswerAPI: ${moment().format('M-D-YY')} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
-        let { date } = req.query;
-        let { category } = req.query;
-        let statusCode = 404
-        let message = "Please try again later";
-        let result = []
-        date = date ? date : currentTehranDate();
-        let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
-        let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
-        let resultMini;
-        let resultMaxi;
-        let qa_id = '';
-        message = "Request done successfully";
-        if (category == 'NYT-Mini' || !category) {
-            resultMini = await prisma.nyt_mini.findFirst({
-                where: {
-                    date: date
-                }
-            })
-        }
-        if (category == 'NYT-Maxi' || !category) {
-            resultMaxi = await prisma.nyt_maxi.findFirst({
-                where: {
-                    date: date
-                }
-            })
-        }
-        if (!resultMaxi && !resultMini) {
-            return res.status(statusCode).json({ message: "There is no data for this date", qa_id, title_date, date: fullDateFormat, category, result: [] })
-        }
-        else if (resultMaxi || resultMini) {
-            if (category == 'NYT-Maxi') {
-                result = [...resultMaxi.questions_answers];
-                qa_id = resultMaxi.qa_id
+// const crawlQuestionsAnswers = async (inputDate = currentTehranDate()) => {
+//     try {
+//         let answers;
+//         console.log('---------------------- Crawler started for NYT (Mokhayaran)--------------------')
+//         date = inputDate;
+//         let nyt = new NytCrwaler(date);
+//         let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePageForMaxi()
+//         if (questionlinksInfo) {
+//             let { id, date, questions, questions_answers } = questionlinksInfo
+//             if (!questions_answers) {
+//                 let requestInfo = await prisma.nyt.findFirst({
+//                     where: { id: id },
+//                 })
+//                 if (requestInfo.status != statusService.RUNNING) {
+//                     answers = await nyt.getAllAnswersFromQuestionLinksOfMaxi(id, date, questions)
+//                 }
+//             }
+//             else {
+//                 console.log('*************DATA Got COMPLETELY ( Mokhayaran)****************************')
+//             }
+//         }
 
-            }
-            else if (category == 'NYT-Mini') {
-                result = [...resultMini.questions_answers];
-                qa_id = resultMini.qa_id
-            }
-            else {
-                result = [...resultMini?.questions_answers, ...resultMaxi?.questions_answers];
-                category = ''
-            }
-            message = "Request done successfully";
-            statusCode = 200;
-        }
-        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, title_date, date: fullDateFormat, result })
-    } catch (error) {
-        console.log(error)
-        const errors = new HttpError(
-            `Something went wrong, please try again later`,
-            500
-        );
-        return next(errors);
-    }
-};
-const crawlQuestionsAnswers = async (inputDate = currentTehranDate()) => {
-    try {
-        let answers;
-        console.log('---------------------- Crawler started for NYT --------------------')
-        date = inputDate;
-        let nyt = new NytCrwaler(date);
-        let questionlinksInfo = await nyt.getAllQuestionLinksFromHomePageForMaxi()
-        if (questionlinksInfo) {
-            let { id, date, questions, questions_answers } = questionlinksInfo
-            if (!questions_answers) {
-                let requestInfo = await prisma.nyt.findFirst({
-                    where: { id: id },
-                })
-                if (requestInfo.status != statusService.RUNNING) {
-                    answers = await nyt.getAllAnswersFromQuestionLinksOfMaxi(id, date, questions)
-                }
-            }
-            else {
-                console.log('*************DATA Got COMPLETELY****************************')
-            }
-        }
-
-        console.log('---------------------- Crawler ended for NYT --------------------')
-    } catch (error) {
-        console.log(error)
-    }
-};
+//         console.log('---------------------- Crawler ended for NYT (Mokhayaran)--------------------')
+//     } catch (error) {
+//         console.log(error)
+//     }
+// };
 
 
-const doubleCheckDataForMini = async () => {
+const doubleCheckDataForMini = async (req, res) => {
     let date = currentTehranDate();
     let mini = await prisma.nyt_mini.findFirst({
         where: {
@@ -233,9 +176,12 @@ const doubleCheckDataForMini = async () => {
                     where: { id: id },
                 })
                 answers = await nyt.getAllAnswersFromQuestionLinks(id, date, questions, url)
+                return res.status(200).json({ message: "Request done successfully", date: date, result: answers })
             }
         }
     }
+    return res.status(200).json({ message: "Request done successfully"})
+    
 }
 
 
@@ -381,15 +327,80 @@ const sendDataToProductionForMaxi = async (req, res) => {
     }
 }
 
+
+const getQuestionsAnswerAPI = async (req, res, next) => {
+    try {
+        console.log(`*** GET: getQuestionsAnswerAPI: ${moment().format('M-D-YY')} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
+        let { date } = req.query;
+        let { category } = req.query;
+        let statusCode = 404
+        let message = "Please try again later";
+        let result = []
+        date = date ? date : currentTehranDate();
+        let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
+        let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
+        let resultMini;
+        let resultMaxi;
+        let qa_id = '';
+        message = "Request done successfully";
+        if (category == 'NYT-Mini' || !category) {
+            resultMini = await prisma.nyt_mini.findFirst({
+                where: {
+                    date: date
+                }
+            })
+        }
+        if (category == 'NYT-Maxi' || !category) {
+            resultMaxi = await prisma.nyt_maxi.findFirst({
+                where: {
+                    date: date
+                }
+            })
+        }
+        if (!resultMaxi && !resultMini) {
+            return res.status(statusCode).json({ message: "There is no data for this date", qa_id, title_date, date: fullDateFormat, category, result: [] })
+        }
+        else if (resultMaxi || resultMini) {
+            if (category == 'NYT-Maxi') {
+                result = [...resultMaxi.questions_answers];
+                qa_id = resultMaxi.qa_id
+
+            }
+            else if (category == 'NYT-Mini') {
+                result = [...resultMini.questions_answers];
+                qa_id = resultMini.qa_id
+            }
+            else {
+                result = [...resultMini?.questions_answers, ...resultMaxi?.questions_answers];
+                category = ''
+            }
+            message = "Request done successfully";
+            statusCode = 200;
+        }
+        return res.status(statusCode).json({ message: message, qa_id: qa_id, category, title_date, date: fullDateFormat, result })
+    } catch (error) {
+        console.log(error)
+        const errors = new HttpError(
+            `Something went wrong, please try again later`,
+            500
+        );
+        return next(errors);
+    }
+};
+
+
 exports.crawlMainQuestionAnswersAPI = crawlMainQuestionAnswersAPI
 exports.crawlMainQuestionAnswersForMini = crawlMainQuestionAnswersForMini
 exports.crawlMainQuestionAnswersForMaxi = crawlMainQuestionAnswersForMaxi
 
-exports.crawlQuestionsAnswersBasedLinksAPI = crawlQuestionsAnswersBasedLinksAPI
-exports.crawlQuestionsAnswers = crawlQuestionsAnswers
-
-exports.getQuestionsAnswerAPI = getQuestionsAnswerAPI
+exports.crawlQuestionsAnswersMaxiManually = crawlQuestionsAnswersMaxiManually
 exports.doubleCheckDataForMini = doubleCheckDataForMini
+
+// exports.crawlQuestionsAnswers = crawlQuestionsAnswers
+
 
 exports.sendDataToProductionForMini = sendDataToProductionForMini
 exports.sendDataToProductionForMaxi = sendDataToProductionForMaxi
+
+
+exports.getQuestionsAnswerAPI = getQuestionsAnswerAPI
