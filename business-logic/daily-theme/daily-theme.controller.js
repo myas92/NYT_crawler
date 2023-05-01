@@ -15,6 +15,7 @@ const crawlDailyThemeMaxiAPI = async (req, res, next) => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMaxi();
+        console.log(questionsAnswers)
         await sendDataDailyThemeToProductionForMaxi()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Maxi **  API--------------------')
         return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
@@ -48,6 +49,7 @@ const crawlDailyThemeMiniAPI = async (req, res, next) => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMini();
+        console.log(questionsAnswers)
         await sendDataDailyThemeToProductionForMini()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Mini **  API--------------------')
         return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
@@ -73,32 +75,6 @@ const crawlDailyThemeMini = async () => {
 
 
 // --------------------------------- WordPress ----------------------------------------------
-const getQuestionsAnswerMaxiAPI = async (req, res, next) => {
-    try {
-        console.log(`*** GET: Seven-letter-words: ${currentTehranDate()} -- ${moment().format('jYYYY/jMM/jDD HH:mm:ss')}`)
-        let { date } = req.query;
-        date = date ? date : currentTehranDate();
-        let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
-        let fullDateFormat = moment().format('YYYY-MM-DD HH:mm:ss');
-        let category = '7LW'
-        let result = await prisma.seven_little_words.findFirst({
-            where: {
-                date: date
-            }
-        })
-        if (!result) {
-            return res.status(404).json({ message: "There is no data for this date", date: fullDateFormat, qa_id: '', title_date, category: category, result: [] })
-        }
-        return res.status(200).json({ message: "Request done successfully", qa_id: result.qa_id, title_date, date: fullDateFormat, category: category, result: result.questions_answers, })
-    } catch (error) {
-        console.log(error)
-        const errors = new HttpError(
-            `Something went warong, plase try again later`,
-            500
-        );
-        return next(errors);
-    }
-};
 
 
 const sendDataDailyThemeToProductionForMaxi = async (req, res) => {
@@ -131,9 +107,9 @@ const sendDataDailyThemeToProductionForMaxi = async (req, res) => {
             data: data
         };
         try {
-            // const response = await axios(config);
+            const response = await axios(config);
             console.log(config);
-            // console.log("Send Data to Wordpress Success [--Maxi--]:\n", response?.data)
+            console.log("Send Data to Wordpress Success [--Mini--]:\n", response?.data)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMaxi.qa_id,
@@ -166,19 +142,19 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
     let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().subtract(5,'minutes').format('YYYY-MM-DD HH:mm:ss'); // -5 minutes for maxi
     const category = 'daily-theme-mini';
-    let resultMaxi = await prisma.daily_theme_mini.findFirst({
+    let result = await prisma.daily_theme_mini.findFirst({
         where: {
             date: date
         }
     })
 
-    if (resultMaxi && resultMaxi?.questions_answers.length > 1) {
+    if (result && result?.questions_answers.length > 1) {
         const data = JSON.stringify({
-            "qa_id": resultMaxi.qa_id,
+            "qa_id": result.qa_id,
             'game-name': category,
             "title_date": title_date,
             "date": fullDateFormat,
-            "result": resultMaxi.questions_answers
+            "result": result.questions_answers
         });
         const config = {
             method: 'post',
@@ -191,14 +167,14 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
             data: data
         };
         try {
-            // const response = await axios(config);
-            console.log(config);
-            // console.log("Send Data to Wordpress Success [--Maxi--]:\n", response?.data)
+            const response = await axios(config);
+            // console.log(config);
+            console.log("Send Data to Wordpress Success [-- Daily Theme Mini--]:\n", response?.data)
             await prisma.response_info.create({
                 data: {
-                    qa_id: resultMaxi.qa_id,
+                    qa_id: result.qa_id,
                     category: category,
-                    date: resultMaxi.date,
+                    date: result.date,
                     response: response?.data?.message,
                 }
             })
@@ -207,9 +183,9 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
             console.log("Send Data to Wordpress [--Daily-Theme-Maxi--]:\n", error)
             await prisma.response_info.create({
                 data: {
-                    qa_id: resultMaxi.qa_id,
+                    qa_id: result.qa_id,
                     category: category,
-                    date: resultMaxi?.date,
+                    date: result?.date,
                     response: error.message,
                 }
             })
@@ -286,7 +262,6 @@ exports.crawlDailyThemeMaxiAPI = crawlDailyThemeMaxiAPI
 exports.crawlDailyThemeMiniAPI = crawlDailyThemeMiniAPI
 exports.crawlDailyThemeMaxi = crawlDailyThemeMaxi
 exports.crawlDailyThemeMini = crawlDailyThemeMini
-exports.getQuestionsAnswerMaxiAPI = getQuestionsAnswerMaxiAPI
 
 exports.sendDataDailyThemeToProductionForMaxi = sendDataDailyThemeToProductionForMaxi
 exports.sendDataDailyThemeToProductionForMini = sendDataDailyThemeToProductionForMini

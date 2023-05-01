@@ -11,7 +11,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 class DailyThemeCrwalerService {
     constructor(inputDate) {
         this.date = inputDate
-        // this.date = '7-20-22'
+        // this.date = '5-5-22'
     }
     /**
      * Extract Links, Type, Text form https://dailythemedcrossword.info/regular-7-march-2023-crossword/
@@ -42,7 +42,7 @@ class DailyThemeCrwalerService {
                 let response = await axios({ method: 'get', url: url, headers: {}, timeout: 2 * 60 * 1000 });
                 // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
                 // استخراج لینک و عنوان و نوع سوال
-
+                //fs.writeFileSync(`./body/DL_Maxi_${+new Date()}.html`, response.data)
                 const questionsAnswers = this.extractQuestionsAnswers(response.data, "maxi-cross");
                 if (questionsAnswers) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
@@ -113,29 +113,35 @@ class DailyThemeCrwalerService {
  * @param {*} html 
  * @returns 
  */
-    extractQuestionsAnswers(html,category) {
+    async extractQuestionsAnswers(html,category) {
         let down = [];
         let across = [];
-        let $ = cheerio.load(html);
-        $('body > div.container > div > p').each(function (index, item) {
-            const question  = $(this).text();
-            const regex = /\d*(a|d)\.\s(.*)\:$/gm;
-            let processedText = regex.exec(question);
-            let type = processedText[1]=='d' ? 'down' : 'across'
-            let answer = $(this).next().find('.le').text();
-            let questionFinal = processedText[2].replaceAll("\"",'')
-            let obj = {
-                type: type,
-                answer: answer,
-                category: category,
-                question: questionFinal
+        let $ = await cheerio.load(html);
+        $('body > div.container > div > p').each( function (index, item) {
+            try {
+                let regex = /\d*(a|d)\.\s(.*)\:$/gm;
+                let question  =  $(this).text();
+                let processedText = regex.exec(question);
+                let type = processedText[1]=='d' ? 'down' : 'across'
+                let answer = $(this).next().find('.le').text();
+                answer = answer==''? $(this).next().next().find('.le').text(): answer;
+                let questionFinal = processedText[2].replaceAll("\"",'')
+                let obj = {
+                    type: type,
+                    answer: answer,
+                    category: category,
+                    question: questionFinal
+                }
+                if(obj.type=='down'){
+                    down.push(obj)
+                }
+                else{
+                    across.push(obj)
+                }
+            } catch (error) {
+                console.log('error in Process Daily Theme', error)
             }
-            if(obj.type=='down'){
-                down.push(obj)
-            }
-            else{
-                across.push(obj)
-            }
+
         });
         return [...across,...down]
     }
