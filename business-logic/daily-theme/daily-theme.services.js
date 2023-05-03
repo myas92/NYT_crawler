@@ -37,13 +37,13 @@ class DailyThemeCrwalerService {
                 }
             });
             // // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
-            if (requestInfo.questions_answers == null || requestInfo.questions_answers?.length == 0) {
+            if (requestInfo.questions_answers == null ||  JSON.stringify(requestInfo.questions_answers) === '{}' || requestInfo.questions_answers?.length == 0) {
             //     // ارسال درخواست به سایت
                 let response = await axios({ method: 'get', url: url, headers: {}, timeout: 2 * 60 * 1000 });
                 // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
                 // استخراج لینک و عنوان و نوع سوال
                 //fs.writeFileSync(`./body/DL_Maxi_${+new Date()}.html`, response.data)
-                const questionsAnswers = this.extractQuestionsAnswers(response.data, "maxi-cross");
+                const questionsAnswers = await this.extractQuestionsAnswers(response.data, "maxi-cross");
                 if (questionsAnswers) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
                     await prisma.daily_theme_maxi.update({
@@ -82,13 +82,13 @@ class DailyThemeCrwalerService {
                 }
             });
             // // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
-            if (requestInfo.questions_answers == null || requestInfo.questions_answers?.length == 0) {
+            if (requestInfo.questions_answers == null || JSON.stringify(requestInfo.questions_answers) === '{}'  || requestInfo.questions_answers?.length == 0) {
             //     // ارسال درخواست به سایت
                 let response = await axios({ method: 'get', url: url, headers: {}, timeout: 2 * 60 * 1000 });
                 // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
                 // استخراج لینک و عنوان و نوع سوال
 
-                const questionsAnswers = this.extractQuestionsAnswers(response.data, "mini-cross");
+                const questionsAnswers = await this.extractQuestionsAnswers(response.data, "mini-cross");
                 if (questionsAnswers) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
                     await prisma.daily_theme_mini.update({
