@@ -109,7 +109,7 @@ const sendDataDailyThemeToProductionForMaxi = async (req, res) => {
         try {
             const response = await axios(config);
             console.log(config);
-            console.log("Send Data to Wordpress Success [--Mini--]:\n", response?.data)
+            console.log("Send Data to Wordpress Success [--Daily-Theme-Maxi--]:\n", response?.data)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMaxi.qa_id,

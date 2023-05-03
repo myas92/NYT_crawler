@@ -228,14 +228,14 @@ const sendDataToProductionForMini = async (req, res) => {
             })
 
             // AWS Request
-            try {
-                config.url = process.env.SPEEADREADINGS_URL_AWS
-                const response_aws = await axios(config);
-                console.log('______________AWS response_MINI___________________');
-                console.log(response_aws.data);
-            } catch (error) {
-                console.log("______________________________AWS_________________________", error);
-            }
+            // try {
+            //     config.url = process.env.SPEEADREADINGS_URL_AWS
+            //     const response_aws = await axios(config);
+            //     console.log('______________AWS response_MINI___________________');
+            //     console.log(response_aws.data);
+            // } catch (error) {
+            //     console.log("______________________________AWS_________________________", error);
+            // }
 
         } catch (error) {
             console.log("Send Data to Wordpress [--Mini--]:\n", error)
@@ -298,14 +298,14 @@ const sendDataToProductionForMaxi = async (req, res) => {
                 }
             })
             // AWS Request
-            try {
-                config.url = process.env.SPEEADREADINGS_URL_MAXI_AWS
-                const response_aws = await axios(config);
-                console.log('______________AWS response___________________');
-                console.log(response_aws);
-            } catch (error) {
-                console.log("______________________________AWS_________________________", error);
-            }
+            // try {
+            //     config.url = process.env.SPEEADREADINGS_URL_MAXI_AWS
+            //     const response_aws = await axios(config);
+            //     console.log('______________AWS response___________________');
+            //     console.log(response_aws);
+            // } catch (error) {
+            //     console.log("______________________________AWS_________________________", error);
+            // }
 
         } catch (error) {
             console.log("Send Data to Wordpress [--Maxi--]:\n", error)
