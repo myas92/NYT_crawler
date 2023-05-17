@@ -49,7 +49,7 @@ const crawlDailyThemeMiniAPI = async (req, res, next) => {
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new DailyThemeCrwalerService(date);
         questionsAnswers = await dailyThemeResult.getQuestionAnswerForMini();
-        console.log(questionsAnswers)
+
         await sendDataDailyThemeToProductionForMini()
         console.log('---------------------- Crawler ended for ** Daily-Theme-Mini **  API--------------------')
         return res.status(200).json({ message: "Request done successfully", date: date, result: questionsAnswers })
