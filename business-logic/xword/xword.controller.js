@@ -24,11 +24,14 @@ const crawlMaxiAPI = async (req, res, next) => {
 const crawlMaxi = async () => {
     try {
         let date = currentTehranDate();
-        let questionsAnswers;
         console.log('---------------------- Crawler started for ** xword-Maxi ** Cron --------------------')
         date = date ? date : currentTehranDate();
         let dailyThemeResult = new XWordCrawlerService(date);
-        questionsAnswers = await dailyThemeResult.getQuestionAnswerForMaxi();
+        const {questionsAnswers, message} = await dailyThemeResult.getQuestionAnswerForMaxi();
+        if (message == 'done') {
+            console.log(" ************** Got xword maxi---> Send Data to WP ************** ")
+            await sendDataToProductionForMaxi()
+        }
         console.log('---------------------- Crawler ended for ** xword-Maxi **  Cron--------------------')
     } catch (error) {
         console.log(error)
@@ -77,6 +80,74 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
         return next(errors);
     }
 };
+
+
+const sendDataToProductionForMaxi = async (req, res) => {
+    const date = currentTehranDate();
+    let title_date = momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
+    let fullDateFormat = moment().utc().subtract(5, 'minutes').format('YYYY-MM-DD HH:mm:ss'); // -5 minutes for maxi
+    const category = 'NYT-Maxi';
+    let resultMaxi = await prisma.xword_maxi.findFirst({
+        where: {
+            date: date
+        }
+    })
+
+    if (resultMaxi && resultMaxi?.questions_answers.length > 1) {
+        const data = JSON.stringify({
+            "qa_id": resultMaxi.qa_id,
+            'game-name': category,
+            "title_date": title_date,
+            "date": fullDateFormat,
+            "result": resultMaxi.questions_answers
+        });
+        const config = {
+            method: 'post',
+            url: process.env.SPEEADREADINGS_URL_MAXI,
+            headers: {
+                'Game-name': category,
+                'Authorization': process.env.SPEEADREADINGS_PASSWORD,
+                'Content-Type': 'application/json'
+            },
+            data: data
+        };
+        try {
+
+            const response = await axios(config);
+            console.log("Send Data to Wordpress Success [--x word Maxi--]:\n", response.data)
+            await prisma.response_info.create({
+                data: {
+                    qa_id: resultMaxi.qa_id,
+                    category: category,
+                    date: resultMaxi.date,
+                    response: response.data?.message,
+                }
+            })
+
+        } catch (error) {
+            console.log("Send Data to Wordpress [-- x word Maxi--]:\n", error?.message)
+            await prisma.response_info.create({
+                data: {
+                    qa_id: resultMaxi.qa_id,
+                    category: category,
+                    date: resultMaxi.date,
+                    response: error.message,
+                }
+            })
+
+        }
+
+    }
+    if (res) {
+        res.send({ message: 'Request done successfully for xword Maxi' })
+    }
+}
+
+
+
+
+
 exports.crawlMaxiAPI = crawlMaxiAPI
 exports.crawlMaxi = crawlMaxi
 exports.getQuestionsAnswerAPI = getQuestionsAnswerAPI
+exports.sendDataToProductionForMaxi = sendDataToProductionForMaxi

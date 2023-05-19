@@ -62,9 +62,9 @@ class XWordCrawlerService {
                     });
 
                 }
-                return questionsAnswers
+                return { questionsAnswers: questionsAnswers, message: 'done' }
             }
-            return requestInfo.questions_answers
+            return { questionsAnswers: requestInfo.questions_answers, message: '' }
         } catch (error) {
             console.log(error)
         }

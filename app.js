@@ -9,7 +9,7 @@ const SevenLittleWordsRouter = require("./business-logic/seven-little-words/seve
 const dailyThemeRouter = require("./business-logic/daily-theme/daily-theme.routes");
 const xWordRouter = require("./business-logic/xword/xword.routes");
 require('./cronjob/nyt-mini');
-require('./cronjob/nyt-maxi');
+//require('./cronjob/nyt-maxi');
 require('./cronjob/seven-little-words');
 require('./cronjob/daily-theme');
 require('./cronjob/xword');
