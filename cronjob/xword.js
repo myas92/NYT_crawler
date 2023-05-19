@@ -3,9 +3,9 @@ const moment = require('moment-jalaali');
 
 const xwordController = require("../business-logic/xword/xword.controller");
 
-const patternCrawlWeekends = '10 0 18 * * sat,sun'
-const patternCrawlWeekdays = '10 0 22 * * mon,tue,wed,thu,fri'
-// const patternCrawlWeekdays = '0 */1 * * * sat,sun,mon,tue,wed,thu,fri'
+const patternCrawlWeekends = '10,30 0,1 18 * * sat,sun'
+const patternCrawlWeekdays = '10,30 0,1 22 * * mon,tue,wed,thu,fri'
+// const patternCrawlWeekdays = '*/15 */1 * * * sat,sun,mon,tue,wed,thu,fri'
 
 
 let firstJobForMaxi = new CronJob(
