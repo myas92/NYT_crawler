@@ -151,7 +151,7 @@ class NytCrwalerService {
                 let extractedAnswers;
                 let extractedAnswersSecondRequest;
                 let countMaxi = 0;
-                let requestNumber = new Array(30).fill(0)
+                let requestNumber = new Array(5).fill(0)
                 for (let [index, request] of requestNumber.entries()) {
                     console.log('Maxi-NumberRequest:--->', index);
                     responseMaxiCross = await axios({ method: 'get', url: urlMaxiCross, headers: {} });

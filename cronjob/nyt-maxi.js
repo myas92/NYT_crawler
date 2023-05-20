@@ -3,8 +3,11 @@ const moment = require('moment-jalaali');
 
 const nytController = require("../business-logic/nyt/nyt.controller");
 
-const patternCrawlWeekends = '10 0 18 * * sat,sun'
-const patternCrawlWeekdays = '10 0 22 * * mon,tue,wed,thu,fri'
+
+const patternCrawlWeekends = '10,40 0,1,2,3,4 18 * * sat,sun'
+const patternCrawlWeekdays = '10,40 0,1,2,3,4 22 * * mon,tue,wed,thu,fri'
+// const patternCrawlWeekends = '10 0 18 * * sat,sun'
+// const patternCrawlWeekdays = '10 0 22 * * mon,tue,wed,thu,fri'
 const patternSendDataWeekends = '0 2 18 * * sat,sun'
 const patternSendDataWeekdays = '0 2 22 * * mon,tue,wed,thu,fri';
 
