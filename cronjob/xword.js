@@ -31,5 +31,5 @@ let secondJobForMaxi = new CronJob(
     },
     null,
     true,
-    'Asia/Tehran'
+    'America/New_York'
 );
