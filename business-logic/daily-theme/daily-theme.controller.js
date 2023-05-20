@@ -88,7 +88,7 @@ const sendDataDailyThemeToProductionForMaxi = async (req, res) => {
         }
     })
 
-    if (resultMaxi && resultMaxi?.questions_answers.length > 1) {
+    if (resultMaxi && resultMaxi?.questions_answers?.length > 1) {
         const data = JSON.stringify({
             "qa_id": resultMaxi.qa_id,
             'game-name': category,
@@ -148,7 +148,7 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
         }
     })
 
-    if (result && result?.questions_answers.length > 1) {
+    if (result && result?.questions_answers?.length > 1) {
         const data = JSON.stringify({
             "qa_id": result.qa_id,
             'game-name': category,

@@ -36,15 +36,24 @@ class DailyThemeCrwalerService {
                     status: statusService.START
                 }
             });
+            let questionsAnswers =[]
             // // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
-            if (requestInfo.questions_answers == null ||  JSON.stringify(requestInfo.questions_answers) === '{}' || requestInfo.questions_answers?.length == 0) {
-            //     // ارسال درخواست به سایت
-                let response = await axios({ method: 'get', url: url, headers: {}, timeout: 2 * 60 * 1000 });
-                // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
-                // استخراج لینک و عنوان و نوع سوال
-                //fs.writeFileSync(`./body/DL_Maxi_${+new Date()}.html`, response.data)
-                const questionsAnswers = await this.extractQuestionsAnswers(response.data, "maxi-cross");
-                if (questionsAnswers) {
+            if (requestInfo.questions_answers == null || JSON.stringify(requestInfo.questions_answers) === '{}' || requestInfo.questions_answers?.length == 0) {
+                let requestNumber = new Array(5).fill(0)
+                for (let [index, request] of requestNumber.entries()) {
+                    try {
+                        // ارسال درخواست به سایت
+                        let response = await axios({ method: 'get', url: url, headers: {}, timeout: 2 * 60 * 1000 });
+                        // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
+                        // استخراج لینک و عنوان و نوع سوال
+                        //fs.writeFileSync(`./body/DL_Maxi_${+new Date()}.html`, response.data)
+                        questionsAnswers = await this.extractQuestionsAnswers(response.data, "maxi-cross");
+                    }
+                    catch {
+
+                    }
+                }
+                if (questionsAnswers?.length > 1) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
                     await prisma.daily_theme_maxi.update({
                         where: { id: requestInfo.id },
@@ -62,7 +71,7 @@ class DailyThemeCrwalerService {
             console.log(error)
         }
     }
-    
+
     async getQuestionAnswerForMini() {
         try {
             let date = moment(this.date, 'M-D-YY').format('D-MMMM-YYYY')
@@ -81,15 +90,27 @@ class DailyThemeCrwalerService {
                     status: statusService.START
                 }
             });
+            let questionsAnswers = [];
             // // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
-            if (requestInfo.questions_answers == null || JSON.stringify(requestInfo.questions_answers) === '{}'  || requestInfo.questions_answers?.length == 0) {
-            //     // ارسال درخواست به سایت
-                let response = await axios({ method: 'get', url: url, headers: {}, timeout: 2 * 60 * 1000 });
-                // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
-                // استخراج لینک و عنوان و نوع سوال
+            if (requestInfo.questions_answers == null || JSON.stringify(requestInfo.questions_answers) === '{}' || requestInfo.questions_answers?.length == 0) {
+                let requestNumber = new Array(5).fill(0)
+                for (let [index, request] of requestNumber.entries()) {
+                    try {
+                        // ارسال درخواست به سایت
+                        let response = await axios({ method: 'get', url: url, headers: {}, timeout: 2 * 60 * 1000 });
+                        // responseMaxiCross = fs.readFileSync('/home/yaser/Desktop/new-times/maxi/maxi.html','utf-8')
+                        // استخراج لینک و عنوان و نوع سوال
 
-                const questionsAnswers = await this.extractQuestionsAnswers(response.data, "mini-cross");
-                if (questionsAnswers) {
+                        questionsAnswers = await this.extractQuestionsAnswers(response.data, "mini-cross");
+                        if (questionsAnswers.length > 1) {
+                            break;
+                        }
+                    } catch (error) {
+                        await delay(3000)
+                    }
+
+                }
+                if (questionsAnswers?.length > 1) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
                     await prisma.daily_theme_mini.update({
                         where: { id: requestInfo.id },
@@ -101,6 +122,7 @@ class DailyThemeCrwalerService {
 
                 }
                 return questionsAnswers
+
             }
             return requestInfo.questions_answers
         } catch (error) {
@@ -113,29 +135,29 @@ class DailyThemeCrwalerService {
  * @param {*} html 
  * @returns 
  */
-    async extractQuestionsAnswers(html,category) {
+    async extractQuestionsAnswers(html, category) {
         let down = [];
         let across = [];
         let $ = await cheerio.load(html);
-        $('body > div.container > div > p').each( function (index, item) {
+        $('body > div.container > div > p').each(function (index, item) {
             try {
                 let regex = /\d*(a|d)\.\s(.*)\:$/gm;
-                let question  =  $(this).text();
+                let question = $(this).text();
                 let processedText = regex.exec(question);
-                let type = processedText[1]=='d' ? 'down' : 'across'
+                let type = processedText[1] == 'd' ? 'down' : 'across'
                 let answer = $(this).next().find('.le').text();
-                answer = answer==''? $(this).next().next().find('.le').text(): answer;
-                let questionFinal = processedText[2].replaceAll("\"",'')
+                answer = answer == '' ? $(this).next().next().find('.le').text() : answer;
+                let questionFinal = processedText[2].replaceAll("\"", '')
                 let obj = {
                     type: type,
                     answer: answer,
                     category: category,
                     question: questionFinal
                 }
-                if(obj.type=='down'){
+                if (obj.type == 'down') {
                     down.push(obj)
                 }
-                else{
+                else {
                     across.push(obj)
                 }
             } catch (error) {
@@ -143,7 +165,7 @@ class DailyThemeCrwalerService {
             }
 
         });
-        return [...across,...down]
+        return [...across, ...down]
     }
 
 }
