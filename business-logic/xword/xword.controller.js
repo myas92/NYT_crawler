@@ -125,7 +125,7 @@ const sendDataToProductionForMaxi = async (req, res) => {
             })
 
         } catch (error) {
-            console.log("Send Data to Wordpress [-- x word Maxi--]:\n", error?.message)
+            console.error("Send Data to Wordpress [-- x word Maxi--]:\n", error?.message)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMaxi.qa_id,

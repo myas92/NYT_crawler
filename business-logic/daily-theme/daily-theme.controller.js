@@ -108,8 +108,8 @@ const sendDataDailyThemeToProductionForMaxi = async (req, res) => {
         };
         try {
             const response = await axios(config);
-            console.log(config);
-            console.log("Send Data to Wordpress Success [--Daily-Theme-Maxi--]:\n", response?.data)
+            // console.log(config);
+            console.log("Send Data to Wordpress Success [--Daily-Theme-Maxi--]:\n")
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMaxi.qa_id,
@@ -120,7 +120,7 @@ const sendDataDailyThemeToProductionForMaxi = async (req, res) => {
             })
 
         } catch (error) {
-            console.log("Send Data to Wordpress [--Daily-Theme-Maxi--]:\n", error)
+            console.error("Send Data to Wordpress [--Daily-Theme-Maxi--]:\n", error?.message)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMaxi.qa_id,
@@ -169,7 +169,7 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
         try {
             const response = await axios(config);
             // console.log(config);
-            console.log("Send Data to Wordpress Success [-- Daily Theme Mini--]:\n", response?.data)
+            console.log("Send Data to Wordpress Success [-- Daily Theme Mini--]:\n")
             await prisma.response_info.create({
                 data: {
                     qa_id: result.qa_id,
@@ -180,7 +180,7 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
             })
 
         } catch (error) {
-            console.log("Send Data to Wordpress [--Daily-Theme-Maxi--]:\n", error)
+            console.error("Send Data to Wordpress [--Daily-Theme-mini--]:\n", error)
             await prisma.response_info.create({
                 data: {
                     qa_id: result.qa_id,
@@ -193,7 +193,7 @@ const sendDataDailyThemeToProductionForMini = async (req, res) => {
         }
     }
     if (res) {
-        res.send({ message: 'Request done successfully for Maxi' })
+        res.send({ message: 'Request done successfully for Mini' })
     }
 }
 

@@ -217,7 +217,7 @@ const sendDataToProductionForMini = async (req, res) => {
         try {
 
             const response = await axios(config);
-            console.log("Send Data to Wordpress Success [--Maini--]:\n", response.data)
+            console.log("Send Data to Wordpress Success [-- NYT Mini--]:\n")
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMini.qa_id,
@@ -238,7 +238,7 @@ const sendDataToProductionForMini = async (req, res) => {
             // }
 
         } catch (error) {
-            console.log("Send Data to Wordpress [--Mini--]:\n", error)
+            console.error("Send Data to Wordpress [--Mini--]:\n", error)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMini.qa_id,
@@ -288,7 +288,7 @@ const sendDataToProductionForMaxi = async (req, res) => {
         try {
 
             const response = await axios(config);
-            console.log("Send Data to Wordpress Success [--Maxi--]:\n", response.data)
+            console.log("Send Data to Wordpress Success [--Maxi--]:\n")
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMaxi.qa_id,
@@ -308,7 +308,7 @@ const sendDataToProductionForMaxi = async (req, res) => {
             // }
 
         } catch (error) {
-            console.log("Send Data to Wordpress [--Maxi--]:\n", error)
+            console.log("Send Data to Wordpress [--Maxi--]:\n", error?.message)
             await prisma.response_info.create({
                 data: {
                     qa_id: resultMaxi.qa_id,
