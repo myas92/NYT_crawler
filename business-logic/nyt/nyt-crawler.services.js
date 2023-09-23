@@ -263,6 +263,7 @@ class NytCrwalerService {
                 isDown = !isDown;
             }
             const answer = $(this).text();
+            if(isNaN(parseInt(answer)))
             backupAnswer.push(answer);
             // result[index]["answer"] = answer;
         });
