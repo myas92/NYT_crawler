@@ -84,12 +84,20 @@ class XWordCrawlerService {
     async  processData({ data, type }) {
         let result = []
         for (const item of data) {
-            let {groups} = item.match(/:\s(?<question>.*)\s:\s<b>(?<answer>.*)<\/b>/)
-            groups.question = await this.convertHTMLtoStr(groups.question);
-            groups.answer = await this.convertHTMLtoStr(groups.answer);
-            groups.type = type;
-            groups.category = 'maxi-cross';
-            result.push(groups)
+            try{
+                console.log(item)
+                let {groups} = item.match(/:\s(?<question>.*)\s:\s<b>(?<answer>.*)<\/b>/s)
+                groups.question = await this.convertHTMLtoStr(groups.question);
+                groups.answer = await this.convertHTMLtoStr(groups.answer);
+                groups.type = type;
+                groups.category = 'maxi-cross';
+                result.push(groups)
+            }
+            catch(error){
+                console.log("error--------------:",item)
+                console.log(error)
+            }
+
         }
         return result;
     }
