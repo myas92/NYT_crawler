@@ -111,3 +111,27 @@ model xword_maxi {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @default(now())
 }
+
+
+model nytimes_mini {
+  id                Int      @id @default(autoincrement())
+  qa_id             String?
+  date              String?  @unique
+  url               String?  @unique
+  questions_answers Json?
+  status            String?
+  is_deleted        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+}
+model nytimes_maxi {
+  id                Int      @id @default(autoincrement())
+  qa_id             String?
+  date              String?  @unique
+  url               String?  @unique
+  questions_answers Json?
+  status            String?
+  is_deleted        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+}

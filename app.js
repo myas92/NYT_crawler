@@ -8,16 +8,30 @@ const HttpError = require('./utils/http-error');
 const SevenLittleWordsRouter = require("./business-logic/seven-little-words/seven-little-words-crawler.routes");
 const dailyThemeRouter = require("./business-logic/daily-theme/daily-theme.routes");
 const xWordRouter = require("./business-logic/xword/xword.routes");
+const nytimesRouter = require("./business-logic/nytimes/nytimes.routes");
+
+// کدام سرویس ها اجرا شود
+
 require('./cronjob/nyt-mini');
-//require('./cronjob/nyt-maxi');
+//require('./cronjob/nyt-maxi'); for nyt maxi
+require('./cronjob/xword'); // for nyt maxi 
+
+//require('./cronjob/nytimes-maxi'); // for nyt maxi
+
+
 require('./cronjob/seven-little-words');
+
 //require('./cronjob/daily-theme');
-require('./cronjob/xword');
+
+
+
+
 
 app.use("/nyt", nytRouters);
 app.use("/seven-little-words", SevenLittleWordsRouter);
 //app.use("/daily-theme", dailyThemeRouter);
 app.use("/xword", xWordRouter);
+app.use("/nytimes", nytimesRouter);
 
 
 app.use((req, res, next) => {

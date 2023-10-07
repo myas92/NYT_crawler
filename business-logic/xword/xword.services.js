@@ -85,7 +85,6 @@ class XWordCrawlerService {
         let result = []
         for (const item of data) {
             try{
-                console.log(item)
                 let {groups} = item.match(/:\s(?<question>.*)\s:\s<b>(?<answer>.*)<\/b>/s)
                 groups.question = await this.convertHTMLtoStr(groups.question);
                 groups.answer = await this.convertHTMLtoStr(groups.answer);
