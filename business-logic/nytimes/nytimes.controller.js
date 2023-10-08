@@ -118,16 +118,16 @@ const sendDataToProductionForMini = async (req, res) => {
 
     if (!isEmpty(result)) {
         const body = JSON.stringify(outputModel(result.qa_id, CATEGORY, titleDate, fullDateFormat, result.questions_answers))
-        const config = getConfigWP(process.env.SPEEADREADINGS_URL_MAXI, CATEGORY, body);
+        const config = getConfigWP(process.env.SPEEADREADINGS_URL_MINI, CATEGORY, body);
         try {
 
             response = await axios(config);
-            console.log("Sent Data to Wordpress Successfully [--nytimes.com-Maxi--]:\n", response?.data)
+            console.log("Sent Data to Wordpress Successfully [--nytimes.com-Mini--]:\n", response?.data)
         } catch (error) {
-            console.error("Error Sending Data to Wordpress [--nytimes.com-Maxi--]:\n", error?.message)
+            console.error("Error Sending Data to Wordpress [--nytimes.com-Mini--]:\n", error?.message)
             await saveResponseWordpress('response_info', result.qa_id, CATEGORY, result.date, error.message)
             if (res) {
-                return res.status(500).send({ message: 'Error in sending nytimes.com Maxi data to wordpress server' })
+                return res.status(500).send({ message: 'Error in sending nytimes.com Mini data to wordpress server' })
             }
         }
     }
