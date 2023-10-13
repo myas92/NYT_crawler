@@ -2,12 +2,13 @@ const prisma = require('../prisma/prisma-client');
 const statusService = require('../config/constance/status');
 const { randomBytes } = require('crypto');
 
-async function finishCrawling(table, id, questionsAnswers) {
+async function finishCrawling(table, id, questionsAnswers, board="") {
     try {
         let result = await prisma[table].update({
             where: { id: id },
             data: {
                 questions_answers: questionsAnswers,
+                board: board,
                 status: statusService.FINISH
             },
         });

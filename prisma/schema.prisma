@@ -25,6 +25,7 @@ model nyt_maxi {
   date              String?  @unique
   url_maxi_cross    String?  @unique
   questions_answers Json?
+  board             String?
   status            String?
   is_deleted        Boolean  @default(false)
   createdAt         DateTime @default(now())
@@ -37,6 +38,7 @@ model nyt_mini {
   date              String?  @unique
   url_mini_cross    String?  @unique
   questions_answers Json?
+  board             String?
   status            String?
   is_deleted        Boolean  @default(false)
   createdAt         DateTime @default(now())
@@ -106,6 +108,7 @@ model xword_maxi {
   date              String?  @unique
   url               String?  @unique
   questions_answers Json?
+  board             String?
   status            String?
   is_deleted        Boolean  @default(false)
   createdAt         DateTime @default(now())
@@ -119,6 +122,7 @@ model nytimes_mini {
   date              String?  @unique
   url               String?  @unique
   questions_answers Json?
+  board             String?
   status            String?
   is_deleted        Boolean  @default(false)
   createdAt         DateTime @default(now())
@@ -130,6 +134,7 @@ model nytimes_maxi {
   date              String?  @unique
   url               String?  @unique
   questions_answers Json?
+  board             String?
   status            String?
   is_deleted        Boolean  @default(false)
   createdAt         DateTime @default(now())

@@ -96,7 +96,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
             return res.status(404).json({ message: "There is no data for this date", qa_id: '', title_date, date: fullDateFormat, category, result: [] })
         }
 
-        return res.status(200).json({ message: "Request done successfully", qa_id: result.qa_id, category, title_date, date: fullDateFormat, result: [...result.questions_answers] })
+        return res.status(200).json({ message: "Request done successfully", qa_id: result.qa_id, category, title_date, date: fullDateFormat, result: [...result.questions_answers], board: result.board })
     } catch (error) {
         console.log(error)
         const errors = new HttpError(
@@ -117,7 +117,7 @@ const sendDataToProductionForMini = async (req, res) => {
     let result = await findByDate(TABLE, date)
 
     if (!isEmpty(result)) {
-        const body = JSON.stringify(outputModel(result.qa_id, CATEGORY, titleDate, fullDateFormat, result.questions_answers))
+        const body = JSON.stringify(outputModel(result.qa_id, CATEGORY, titleDate, fullDateFormat, result.questions_answers, result.board))
         const config = getConfigWP(process.env.SPEEADREADINGS_URL_MINI, CATEGORY, body);
         try {
 
@@ -144,7 +144,7 @@ const sendDataToProductionForMaxi = async (req, res) => {
     let result = await findByDate(TABLE, date)
 
     if (!isEmpty(result)) {
-        const body = JSON.stringify(outputModel(result.qa_id, CATEGORY, titleDate, fullDateFormat, result.questions_answers))
+        const body = JSON.stringify(outputModel(result.qa_id, CATEGORY, titleDate, fullDateFormat, result.questions_answers, result.board ))
         const config = getConfigWP(process.env.SPEEADREADINGS_URL_MAXI, CATEGORY, body);
         try {
 

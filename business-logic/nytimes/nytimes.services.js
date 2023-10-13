@@ -13,7 +13,7 @@ class NytimesCrawlerService {
     }
     /**
      * Extract data from this website https://www.nytimes.com/crosswords/game/mini/2023/10/07
-     * Extract api https://www.nytimes.com/svc/crosswords/v6/puzzle/mini/2023/10/07.json
+     * Extract api https://www.nytimes.com/svc/crosswords/v6/puzzle/mini/2023-10-13.json
      * @param {*} this.date 5/17/2023
      * @returns 
      */
@@ -42,13 +42,14 @@ class NytimesCrawlerService {
                 });
 
                 const questionsAnswers = await this.extractQuestionsAnswers({ data: response.data, category: CATEGORY });
+                let board = response.data?.body[0]?.board // اطلاعات جدول
                 if (questionsAnswers) {
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
-                    await finishCrawling(TABLE, requestInfo.id, questionsAnswers)
+                    await finishCrawling(TABLE, requestInfo.id, questionsAnswers, board)
                 }
-                return { questionsAnswers: questionsAnswers, message: 'done' }
+                return { questionsAnswers: questionsAnswers, board: board, message: 'done' }
             }
-            return { questionsAnswers: requestInfo.questions_answers, message: '' }
+            return { questionsAnswers: requestInfo.questions_answers, board: requestInfo.board, message: '' }
         } catch (error) {
             console.log(error)
         }
@@ -67,7 +68,7 @@ class NytimesCrawlerService {
             console.log(url)
 
             // // درج اطلاعات اولیه درخواست 
-            let requestInfo =await insertStartCrawling('nytimes_maxi', this.date, url)
+            let requestInfo = await insertStartCrawling('nytimes_maxi', this.date, url)
 
             // // اگر سوالات برای این روز وجود نداشت مجددا دریافت شود
             if (isEmpty(requestInfo.questions_answers)) {
@@ -83,13 +84,15 @@ class NytimesCrawlerService {
                 });
 
                 const questionsAnswers = await this.extractQuestionsAnswers({ data: response.data, category: "maxi-cross" });
+                let board = response.data?.body[0]?.board
                 if (questionsAnswers) {
+                   
                     // درج اطلاعات در دیتابیس که شامل سوالات هست
-                    await finishCrawling('nytimes_maxi', requestInfo.id, questionsAnswers)
+                    await finishCrawling('nytimes_maxi', requestInfo.id, questionsAnswers, board)
                 }
-                return { questionsAnswers: questionsAnswers, message: 'done' }
+                return { questionsAnswers: questionsAnswers, board: board, message: 'done' }
             }
-            return { questionsAnswers: requestInfo.questions_answers, message: '' }
+            return { questionsAnswers: requestInfo.questions_answers, board: requestInfo.board, message: '' }
         } catch (error) {
             console.log(error)
         }
