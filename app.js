@@ -12,12 +12,14 @@ const nytimesRouter = require("./business-logic/nytimes/nytimes.routes");
 
 // کدام سرویس ها اجرا شود
 
-require('./cronjob/nyt-mini');
+//require('./cronjob/nyt-mini');
 //require('./cronjob/nyt-maxi'); for nyt maxi
-require('./cronjob/xword'); // for nyt maxi 
+//require('./cronjob/xword'); // for nyt maxi 
 
-//require('./cronjob/nytimes-maxi'); // for nyt maxi
+require('./cronjob/nytimes-maxi'); // for nyt maxi
 
+
+require('./cronjob/nytimes-mini'); // for nyt maxi
 
 require('./cronjob/seven-little-words');
 

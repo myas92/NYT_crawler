@@ -19,7 +19,7 @@ class NytimesCrawlerService {
      */
     async crawlQuestionAnswerForMini() {
         try {
-            const TABLE = 'nytimes_mini', CATEGORY = 'maxi-cross';
+            const TABLE = 'nytimes_mini', CATEGORY = 'mini-cross';
             let date = moment(this.date, 'M-D-YY').format('YYYY-MM-DD') // 2023-10-07
             console.log("nytimes.com-mini: ", this.date)
             const url = `https://www.nytimes.com/svc/crosswords/v6/puzzle/mini/${date}.json`;

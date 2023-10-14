@@ -206,7 +206,7 @@ const sendDataToProductionForMini = async (req, res) => {
         });
         const config = {
             method: 'post',
-            url: process.env.SPEEADREADINGS_URL,
+            url: process.env.SPEEADREADINGS_URL_MINI,
             headers: {
                 'Game-name': category,
                 'Authorization': process.env.SPEEADREADINGS_PASSWORD,
