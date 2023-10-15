@@ -10,7 +10,7 @@ new CronJob(
     patternCrawlWeekends,
     async function () {
         console.log('nytimes.com/mini :--->', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
-        await controller.crawlMainQuestionAnswersForMini()
+        await controller.crawlMini()
     },
     null,
     true,
@@ -22,7 +22,7 @@ new CronJob(
     patternCrawlWeekdays,
     async function () {
         console.log('nytimes.com/mini :--->', moment().format('jYYYY/jMM/jDD HH:mm:ss'))
-        await controller.crawlMainQuestionAnswersForMini()
+        await controller.crawlMini()
     },
     null,
     true,
