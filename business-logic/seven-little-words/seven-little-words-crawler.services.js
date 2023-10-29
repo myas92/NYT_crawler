@@ -16,19 +16,19 @@ class SevenLittleWordsCrwalerService {
         // this.date = '7-20-22'
     }
     /**
-     * Extract Links, Type, Text form https://nytminicrossword.com/nyt-mini-crossword/7-11-22
+     * Extract Links, Type, Text form https://7littlewords.us/daily-puzzle-answers/?date=${date}
      * @param {*} this.date 7-11-22
      * @returns 
      */
     async getQuestionAnswer() {
         try {
-            let date = moment(this.date, 'M-D-YY').format('YYYYMMDD')
-            const DateValidation = moment(this.date, 'M-D-YY').format('YYYY MMMM D').toLowerCase()
+            let date = moment(this.date, 'M-D-YY').format('D-MMMM-YYYY')
+            const DateValidation = moment(this.date, 'M-D-YY').format('MMMM D YYYY').toLowerCase()
             const validation = `7 little words ${DateValidation} daily puzzle answers`
             console.log("Seven Little Words: ", this.date)
-            console.log(`https://7littlewords.us/daily-puzzle-answers/?date=${date}`)
+            console.log(`https://7littlewords.us/daily-puzzle-answers/${date}-answers`)
 
-            const url = `https://7littlewords.us/daily-puzzle-answers/?date=${date}`;
+            const url = `https://7littlewords.us/daily-puzzle-answers/${date}-answers`;
             // درج اطلاعات اولیه درخواست 
             let requestInfo = await prisma.seven_little_words.upsert({
                 where: { date: this.date },
@@ -92,7 +92,7 @@ class SevenLittleWordsCrwalerService {
                 let row = {}
                 row["question"] = question
                 row["numLetters"] = $(this).find('td:nth-child(2)').text().split(' ')[0];
-                row["answer"] = $(this).attr('onclick').split('\'')[3];
+                row["answer"] = $(this).find('td:nth-child(2)').attr('onclick').split('\'')[3];
                 row["bunos"] = bunos
                 result.push(row)
             }
