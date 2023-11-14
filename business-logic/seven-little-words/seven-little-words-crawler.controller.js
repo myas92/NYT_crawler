@@ -68,7 +68,7 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
 
 
 const sendDataToProductionForSevenLittlesWords = async (req, res) => {
-    date = date ? date : currentTehranDate();
+    let date = currentTehranDate();
     let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     let category = '7LW'
@@ -78,13 +78,14 @@ const sendDataToProductionForSevenLittlesWords = async (req, res) => {
         }
     })
 
+    // Just Send first 7 items
     if (result && result?.questions_answers.length > 1) {
         const data = JSON.stringify({
             "qa_id": result.qa_id,
             'game-name': category,
             "title_date": title_date,
             "date": fullDateFormat,
-            "result": result.questions_answers
+            "result": result.questions_answers.slice(0, 7)
         });
         const config = {
             method: 'post',
