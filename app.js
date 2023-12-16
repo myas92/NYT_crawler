@@ -21,7 +21,7 @@ require('./cronjob/nytimes-maxi'); // for nyt maxi
 
 require('./cronjob/nytimes-mini'); // for nyt maxi
 
-require('./cronjob/seven-little-words');
+//require('./cronjob/seven-little-words');
 
 //require('./cronjob/daily-theme');
 
@@ -30,7 +30,7 @@ require('./cronjob/seven-little-words');
 
 
 app.use("/nyt", nytRouters);
-// app.use("/seven-little-words", SevenLittleWordsRouter);
+app.use("/seven-little-words", SevenLittleWordsRouter);
 //app.use("/daily-theme", dailyThemeRouter);
 app.use("/xword", xWordRouter);
 app.use("/nytimes", nytimesRouter);
