@@ -68,7 +68,8 @@ const getQuestionsAnswerAPI = async (req, res, next) => {
 
 
 const sendDataToProductionForSevenLittlesWords = async (req, res) => {
-    let date = currentTehranDate();
+    let { date } = req.query
+    date = date ? date : currentTehranDate();
     let title_date = date ? moment(date, 'MM-DD-YY').format('YYYY-MM-DD') : momentTZ().tz("Asia/Tehran").format('YYYY-MM-DD');
     let fullDateFormat = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     let category = '7LW'
