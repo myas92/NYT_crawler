@@ -85,7 +85,7 @@ const sendDataToProductionForSevenLittlesWords = async (req, res) => {
             'game-name': category,
             "title_date": title_date,
             "date": fullDateFormat,
-            "result": result.questions_answers.slice(0, 7)
+            "result": result.questions_answers
         });
         const config = {
             method: 'post',
